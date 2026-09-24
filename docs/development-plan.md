@@ -1,6 +1,6 @@
 # 当前开发状态与后续计划
 
-更新：2026-09-24。源码包版本以 [package.json](../package.json) 为准。原始设计过程保留在 [历史计划](history/development-plan-v1.md)，不再作为当前操作约定。使用说明见 [README](../README.md)。
+更新：2026-09-24。源码包版本以 [package.json](../package.json) 为准。使用说明见 [README](../README.md)。
 
 ## 固定规则
 
@@ -46,13 +46,13 @@ tests/
   dependencies.test.ts
 ```
 
-原计划的 commands/prompts/adapters 子目录拆分未采用，不应当作现有文件结构。实际依赖版本由 package.json 和 lockfile 固定。
+实际依赖版本由 package.json 和 lockfile 固定。
 
 ## 配置和数据
 
-本机指针位于 `%LOCALAPPDATA%/workhub-cli/config.json`，可用 WK_CONFIG_PATH 隔离。根 `.wk/config.json` 保存 schemaVersion、layoutVersion、templateVersion 和 gitUser。
+本机指针位于 `%LOCALAPPDATA%/workhub-cli/config.json`，可用 WORKHUB_CONFIG_PATH 隔离。根 `.workhub/config.json` 保存 schemaVersion、layoutVersion、templateVersion 和 gitUser。
 
-install 读取全局 Git user.name 作为建议，交互可修改；不更改全局 Git 配置。重复 install 保存本次选择，不能说配置完全不变。新 Trellis 空间使用 gitUser，关联旧空间不重新设置开发者身份。
+install 读取全局 Git user.name 作为建议，交互可修改；不更改全局 Git 配置。重复 install 保存本次选择，不能说配置完全不变。新 Trellis 空间使用 gitUser，关联已有空间不重新设置开发者身份。
 
 登记保存工作编号、名称、日期、组成部分、生命周期、工作区位置、requestHash 和实际 taskPath。未选 work 时省略它，未选 code 时是空数组。Trellis 必須存在。不要手工编造哈希或任务路径。
 
@@ -64,9 +64,7 @@ install 读取全局 Git user.name 作为建议，交互可修改；不更改全
 
 尚需开展：
 
-1. 0.1.2 的 npm 发布和公开安装验证已于 2026-09-24 完成；后续继续收集使用反馈。
-2. 旧工作补齐 Trellis、追加组成部分和配置迁移命令。
-3. AI 驱动归档：业务验收通过后再移动 work、更新索引和引用，代码不随之移动。
-4. operations 关联、来源索引和模板受控升级。
+1. AI 驱动归档：业务验收通过后再移动 work、更新索引和引用，代码不随之移动。
+2. operations 关联、来源索引和模板受控升级。
 
 archive 命令、自动 operations 提炼、自动 VS Code/Codex 项目配置、备份调度和生产部署均未实现。

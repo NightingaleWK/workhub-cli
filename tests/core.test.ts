@@ -17,7 +17,7 @@ vi.mock('../src/trellis.js',async(importOriginal)=>{
   createTask:(base:string,record:any)=>{
    const rel=`${record.components.trellis.path}/.trellis/tasks/${record.id}`;
    fs.mkdirSync(path.join(base,rel),{recursive:true});
-   for(const [file,body] of Object.entries({'task.json':JSON.stringify({id:record.id}),'wk-context.md':record.id,'wk-handoff.md':'fixture handoff'})) {
+   for(const [file,body] of Object.entries({'task.json':JSON.stringify({id:record.id}),'workhub-context.md':record.id,'workhub-handoff.md':'fixture handoff'})) {
     const target=path.join(base,rel,file);if(!fs.existsSync(target))fs.writeFileSync(target,body);
    }
    return rel;
@@ -28,13 +28,13 @@ vi.mock('../src/trellis.js',async(importOriginal)=>{
 let temp:string,root:string;
 let priorGitConfig:string|undefined;
 beforeEach(()=>{
- temp=fs.mkdtempSync(path.join(os.tmpdir(),'wk-test-'));root=path.join(temp,'中文 WorkHub');process.env.WK_CONFIG_PATH=path.join(temp,'local.json');
+ temp=fs.mkdtempSync(path.join(os.tmpdir(),'workhub-test-'));root=path.join(temp,'中文 WorkHub');process.env.WORKHUB_CONFIG_PATH=path.join(temp,'local.json');
  priorGitConfig=process.env.GIT_CONFIG_GLOBAL;
  process.env.GIT_CONFIG_GLOBAL=path.join(temp,'gitconfig');
- fs.writeFileSync(process.env.GIT_CONFIG_GLOBAL,'[user]\n\tname = wk-test-user\n');
+ fs.writeFileSync(process.env.GIT_CONFIG_GLOBAL,'[user]\n\tname = workhub-test-user\n');
 });
 afterEach(()=>{
- delete process.env.WK_CONFIG_PATH;
+ delete process.env.WORKHUB_CONFIG_PATH;
  if(priorGitConfig===undefined)delete process.env.GIT_CONFIG_GLOBAL;else process.env.GIT_CONFIG_GLOBAL=priorGitConfig;
  fs.rmSync(temp,{recursive:true,force:true});
 });
@@ -44,7 +44,7 @@ describe('workspace behaviors',()=>{
   fs.writeFileSync(process.env.GIT_CONFIG_GLOBAL!,'');
   expect(globalGitUser()).toBeUndefined();expect(()=>install(root)).toThrow('Git 用户名');
   expect(fs.existsSync(root)).toBe(false);
-  install(root,'manual-user');expect((readJson(path.join(root,'.wk/config.json')) as any).gitUser).toBe('manual-user');
+  install(root,'manual-user');expect((readJson(path.join(root,'.workhub/config.json')) as any).gitUser).toBe('manual-user');
  });
  it('requires Trellis even with no optional components and normalizes explicit selection',()=>{
   install(root);
@@ -61,22 +61,22 @@ describe('workspace behaviors',()=>{
   expect(fs.existsSync(path.join(root,'knowledge/work/2026'))).toBe(false);
   expect(fs.readdirSync(path.join(root,'navigation/registry/works'))).toEqual([]);
  });
- it('flags legacy records without Trellis without changing or migrating them',()=>{
+ it('flags records without required Trellis components',()=>{
   install(root);const r=init(root,input());
-  const f=path.join(root,`navigation/registry/works/${r.record.id}.json`);const legacy=readJson(f) as any;
-  delete legacy.components.trellis;delete legacy.taskPath;fs.writeFileSync(f,JSON.stringify(legacy));const before=fs.readFileSync(f,'utf8');
+  const f=path.join(root,`navigation/registry/works/${r.record.id}.json`);const invalid=readJson(f) as any;
+  delete invalid.components.trellis;delete invalid.taskPath;fs.writeFileSync(f,JSON.stringify(invalid));const before=fs.readFileSync(f,'utf8');
   expect(check(root).errors.some(s=>s.includes('Trellis 主目录'))).toBe(true);
-  expect(()=>makePlan(root,input())).toThrow('旧工作缺少');expect(fs.readFileSync(f,'utf8')).toBe(before);
+  expect(()=>makePlan(root,input())).toThrow('工作缺少');expect(fs.readFileSync(f,'utf8')).toBe(before);
  });
  it('installs idempotently, preserves user README and does not create root git',()=>{
   install(root);fs.writeFileSync(path.join(root,'navigation/README.md'),'用户说明');install(root);
   expect(fs.readFileSync(path.join(root,'navigation/README.md'),'utf8')).toBe('用户说明');
   expect(fs.existsSync(path.join(root,'.git'))).toBe(false);
   expect(fs.existsSync(path.join(root,'navigation/.git'))).toBe(true);
-  expect((readJson(path.join(root,'.wk/config.json')) as any).gitUser).toBe(globalGitUser());
+  expect((readJson(path.join(root,'.workhub/config.json')) as any).gitUser).toBe(globalGitUser());
  });
  it('persists an explicitly supplied Git username for future Trellis initialization',()=>{
-  install(root,'人工填写的名字');expect((readJson(path.join(root,'.wk/config.json')) as any).gitUser).toBe('人工填写的名字');
+  install(root,'人工填写的名字');expect((readJson(path.join(root,'.workhub/config.json')) as any).gitUser).toBe('人工填写的名字');
  });
  it('dry plan creates nothing and rejects unknown populated roots',()=>{
   installPlan(root);expect(fs.existsSync(root)).toBe(false);
@@ -86,7 +86,11 @@ describe('workspace behaviors',()=>{
   install(root);const r=init(root,input());expect(r.check.ok).toBe(true);
   expect(r.record.id).toBe('20260924-sample');
   expect(fs.existsSync(path.join(root,'code/sample/.git'))).toBe(true);
-    expect(fs.existsSync(path.join(root,'trellis/sample/AGENTS.md'))).toBe(true);
+  const agents=fs.readFileSync(path.join(root,'trellis/sample/AGENTS.md'),'utf8');
+  expect(agents).toContain('<!-- WORKHUB:START v1 -->');
+  expect(agents).toContain('<!-- WORKHUB:END -->');
+  expect(fs.existsSync(path.join(root,r.record.taskPath!,'workhub-context.md'))).toBe(true);
+  expect(fs.existsSync(path.join(root,r.record.taskPath!,'workhub-handoff.md'))).toBe(true);
   expect(show(root,r.record.id).workspace).toBe('待创建');
   const f=path.join(root,'navigation/indexes/工作目录/2026.md');const old=fs.readFileSync(f,'utf8');writeIndexes(root);expect(fs.readFileSync(f,'utf8')).toBe(old);
   fs.writeFileSync(path.join(root,'code/sample/README.md'),'user change');
@@ -120,7 +124,7 @@ describe('workspace behaviors',()=>{
  });
  it('guards locks and releases own lock after errors',()=>{
   install(root);expect(()=>withLock(root,()=>withLock(root,()=>{}))).toThrow('写锁');
-  expect(fs.existsSync(path.join(root,'.wk/write.lock'))).toBe(false);
+  expect(fs.existsSync(path.join(root,'.workhub/write.lock'))).toBe(false);
  });
  it('rejects traversal and escaping junctions',()=>{
   install(root);expect(()=>inside(root,'../outside')).toThrow('越界');
@@ -131,13 +135,13 @@ describe('workspace behaviors',()=>{
   install(root);const r=init(root,input());
   // Simulate interruption immediately before registry publication, retaining owned files.
   fs.unlinkSync(path.join(root,`navigation/registry/works/${r.record.id}.json`));
-  const log=path.join(root,`.wk/runs/${r.record.id}.json`);const value=readJson(log) as any;value.status='failed';fs.writeFileSync(log,JSON.stringify(value));
+  const log=path.join(root,`.workhub/runs/${r.record.id}.json`);const value=readJson(log) as any;value.status='failed';fs.writeFileSync(log,JSON.stringify(value));
   fs.writeFileSync(path.join(root,'code/sample/README.md'),'preserve after interruption');
   expect(init(root,input()).check.ok).toBe(true);expect(fs.readFileSync(path.join(root,'code/sample/README.md'),'utf8')).toBe('preserve after interruption');
  });
  it('recovers when registration succeeded but index publication was interrupted',()=>{
   install(root);const r=init(root,input());
-  const log=path.join(root,`.wk/runs/${r.record.id}.json`);const value=readJson(log) as any;value.status='failed';fs.writeFileSync(log,JSON.stringify(value));
+  const log=path.join(root,`.workhub/runs/${r.record.id}.json`);const value=readJson(log) as any;value.status='failed';fs.writeFileSync(log,JSON.stringify(value));
   fs.unlinkSync(path.join(root,'navigation/indexes/工作目录/2026.md'));
   expect(init(root,input()).check.ok).toBe(true);
   expect((readJson(log) as any).status).toBe('complete');
@@ -156,7 +160,7 @@ describe('validation and CLI',()=>{
  it('compares Windows short and long paths as the same repository',()=>{
   if(process.platform!=='win32')return;
   const longPath=path.join(temp,'Long Directory For Alias');fs.mkdirSync(longPath);
-  const result=spawnSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',"$fso = New-Object -ComObject Scripting.FileSystemObject; $fso.GetFolder($env:WK_TEST_LONG_PATH).ShortPath"],{encoding:'utf8',env:{...process.env,WK_TEST_LONG_PATH:longPath},windowsHide:true});
+  const result=spawnSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',"$fso = New-Object -ComObject Scripting.FileSystemObject; $fso.GetFolder($env:WORKHUB_TEST_LONG_PATH).ShortPath"],{encoding:'utf8',env:{...process.env,WORKHUB_TEST_LONG_PATH:longPath},windowsHide:true});
   expect(result.status).toBe(0);const shortPath=result.stdout.trim();expect(shortPath.length).toBeGreaterThan(0);
   expect(same(shortPath,longPath)).toBe(true);
   expect(inside(shortPath,'child')).toBe(path.resolve(shortPath,'child'));
@@ -167,7 +171,7 @@ describe('validation and CLI',()=>{
   const cli=path.resolve('dist/cli.js');
   const fixture=path.join(temp,'bin/node_modules/@mindfoldhq/trellis/bin');
   fs.mkdirSync(fixture,{recursive:true});fs.writeFileSync(path.join(fixture,'trellis.js'),"console.log('test-fixture');");
-  const invoke=(args:string[])=>spawnSync(process.execPath,[cli,...args],{encoding:'utf8',timeout:15000,env:{...process.env,PATH:path.join(temp,'bin')+path.delimiter+process.env.PATH,WK_CONFIG_PATH:path.join(temp,'local.json')}});
+  const invoke=(args:string[])=>spawnSync(process.execPath,[cli,...args],{encoding:'utf8',timeout:15000,env:{...process.env,PATH:path.join(temp,'bin')+path.delimiter+process.env.PATH,WORKHUB_CONFIG_PATH:path.join(temp,'local.json')}});
   const dry=invoke(['install','--root',root,'--dry-run','--json']);expect(dry.status).toBe(0);expect(JSON.parse(dry.stdout).root).toBe(root);expect(fs.existsSync(root)).toBe(false);
   expect(invoke(['install','--root',root,'--yes','--json']).status).toBe(0);
   const bad=invoke(['init','--json','--yes']);expect(bad.status).toBe(2);expect(JSON.parse(bad.stdout).ok).toBe(false);

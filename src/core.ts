@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { atomic, dateCheck, ensureFile, exists, fail, gitInit, gitRoot, globalGitUser, hash, inside, jsonWrite, localConfigPath, nameCheck, readJson, records, RecordSchema, RootSchema, run, same, slash, validateRoot, withLock, type WorkRecord } from './common.js';
 import { addAgents, createTask, initTrellis, taskFolders, trellisPreflight, validateAgents } from './trellis.js';
 
-const layout = ['trellis','knowledge/work','knowledge/archive','knowledge/operations','code','navigation/registry/works','navigation/indexes/工作目录','navigation/templates','navigation/workspaces','.wk/runs'];
+const layout = ['trellis','knowledge/work','knowledge/archive','knowledge/operations','code','navigation/registry/works','navigation/indexes/工作目录','navigation/templates','navigation/workspaces','.workhub/runs'];
 export type InitInput = {name:string; slug:string; date:string; components:string[]; trellisExisting?:string; codeExisting?:string; workspaceName?:string};
 export type Plan = { root:string; record:WorkRecord; existing:boolean; directories:string[]; modifications:string[] };
 const JournalSchema = z.object({schemaVersion:z.literal(1), id:z.string(), requestHash:z.string(), record:RecordSchema, status:z.enum(['running','failed','complete']), done:z.array(z.string()), error:z.string().optional()});
@@ -16,9 +16,9 @@ export function installPlan(root: string) {
   if (path.dirname(root) === root) fail('不能把磁盘根目录作为 WorkHub。',2);
   noAncestorGit(root);
   if (gitRoot(root)) fail('WorkHub 根目录不能自身是 Git 仓库。',3);
-  const config = inside(root,'.wk/config.json');
+  const config = inside(root,'.workhub/config.json');
   if (exists(config)) RootSchema.parse(readJson(config));
-  else if (exists(root) && fs.readdirSync(root).some(n=>n !== '.wk' && !layout.includes(n))) fail('目标是未登记的非空目录，请使用空目录或已配置的 WorkHub。',3);
+  else if (exists(root) && fs.readdirSync(root).some(n=>n !== '.workhub' && !layout.includes(n))) fail('目标是未登记的非空目录，请使用空目录或已配置的 WorkHub。',3);
   for (const rel of layout) {
     const p = inside(root,rel);
     if (exists(p) && !fs.statSync(p).isDirectory()) fail(`目录位置被文件占用：${p}`,3);
@@ -38,7 +38,7 @@ export function install(root:string, gitUser?: string) {
     ensureFile(inside(root,'navigation/README.md'),'# WorkHub 导航\n\nregistry/works 是工作登记来源；indexes/工作目录由 workhub 自动生成。\nworkspaces 内工作区由用户在 VS Code 中创建。\n手写说明请另建文件，避免编辑自动生成的年度索引。\n');
     ensureFile(inside(root,'navigation/indexes/系统目录.md'),'# 系统目录\n\n长期系统知识按需建立，当前尚未登记系统。本文可人工维护；年度工作索引由 workhub 生成。\n');
     ensureFile(inside(root,'navigation/templates/README.md'),'# 模板说明\n\nworkhub 内置模板随 npm 包分发；本目录预留人工模板。0.1 不自动加载或覆盖自定义模板。\n');
-    jsonWrite(inside(root,'.wk/config.json'),{schemaVersion:1,layoutVersion:1,templateVersion:1,gitUser:resolvedGitUser});
+    jsonWrite(inside(root,'.workhub/config.json'),{schemaVersion:1,layoutVersion:1,templateVersion:1,gitUser:resolvedGitUser});
     jsonWrite(localConfigPath(),{schemaVersion:1,root});
     return {root,status:'configured',gitUser:resolvedGitUser,next:'workhub init'};
   });
@@ -54,7 +54,7 @@ function component(root:string, category:string, slug:string, existing?:string) 
   }
   return {path:rel,mode: existing ? 'linked' as const : 'created' as const};
 }
-function journalFile(root:string,id:string) { return inside(root,`.wk/runs/${id}.json`); }
+function journalFile(root:string,id:string) { return inside(root,`.workhub/runs/${id}.json`); }
 export function makePlan(root:string, input:InitInput): Plan {
   validateRoot(root); nameCheck(input.name); nameCheck(input.slug); dateCheck(input.date);
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) fail('英文代号只允许小写字母、数字和单连字符。',2);
@@ -72,7 +72,7 @@ export function makePlan(root:string, input:InitInput): Plan {
   const all = records(root);
   const previous = all.find(r=>r.id===id);
   if (previous) {
-    if (!previous.components.trellis) fail(`旧工作缺少必需的 Trellis 入口：${id}。请先迁移或补齐正式管理空间与任务登记；workhub 不自动改写旧工作。`,3);
+    if (!previous.components.trellis) fail(`工作缺少必需的 Trellis 入口：${id}。请补齐正式管理空间与任务登记。`,3);
     if (previous.requestHash !== record.requestHash) fail(`工作编号已存在，参数不一致：${id}`,3);
     return {root,record:previous,existing:true,directories:[],modifications:[]};
   }
@@ -93,17 +93,17 @@ export function makePlan(root:string, input:InitInput): Plan {
   if (record.components.trellis) {
     const tr = record.components.trellis.path;
     const agents = inside(root,`${tr}/AGENTS.md`); validateAgents(agents);
-    if (exists(agents) && !fs.readFileSync(agents,'utf8').includes('<!-- WK:START')) modifications.push(`${tr}/AGENTS.md：保留原文，追加 WK 工作边界区块`);
+    if (exists(agents) && !fs.readFileSync(agents,'utf8').includes('<!-- WORKHUB:START')) modifications.push(`${tr}/AGENTS.md：保留原文，追加 WORKHUB 工作边界区块`);
     if (!log && taskFolders(root,tr,id).length) fail('Trellis 已有同编号任务，需先人工核对登记关系。',3);
     modifications.push(`${tr}/.trellis/tasks：创建正式任务及目录映射，不切换当前任务`);
   }
   // Validate every destination before creating anything.
-  for (const rel of [record.workspace.expectedPath,`navigation/registry/works/${id}.json`,`.wk/runs/${id}.json`,`navigation/indexes/工作目录/${input.date.slice(0,4)}.md`]) inside(root,rel);
+  for (const rel of [record.workspace.expectedPath,`navigation/registry/works/${id}.json`,`.workhub/runs/${id}.json`,`navigation/indexes/工作目录/${input.date.slice(0,4)}.md`]) inside(root,rel);
   return {root,record,existing:false,directories:comps.filter(c=>c.mode==='created').map(c=>c.path),modifications};
 }
 const esc = (s:string)=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('|','&#124;').replace(/[\r\n]/g,' ');
 export function indexText(all:WorkRecord[],year:string) {
-  return `<!-- WK GENERATED: edit registry/works, not this file -->\n# ${year} 年工作目录\n\n| 工作编号 | 名称 | 日期 | 生命周期 | 资料位置 | 工作区预期路径 |\n|---|---|---|---|---|---|\n` + all.filter(r=>r.createdDate.startsWith(year)).sort((a,b)=>a.id.localeCompare(b.id)).map(r=>`| ${r.id} | ${esc(r.name)} | ${r.createdDate} | ${r.lifecycle} | ${esc(r.components.work?.path ?? '未启用 work')} | ${esc(r.workspace.expectedPath)} |`).join('\n')+'\n';
+  return `<!-- WORKHUB GENERATED: edit registry/works, not this file -->\n# ${year} 年工作目录\n\n| 工作编号 | 名称 | 日期 | 生命周期 | 资料位置 | 工作区预期路径 |\n|---|---|---|---|---|---|\n` + all.filter(r=>r.createdDate.startsWith(year)).sort((a,b)=>a.id.localeCompare(b.id)).map(r=>`| ${r.id} | ${esc(r.name)} | ${r.createdDate} | ${r.lifecycle} | ${esc(r.components.work?.path ?? '未启用 work')} | ${esc(r.workspace.expectedPath)} |`).join('\n')+'\n';
 }
 export function writeIndexes(root:string) {
   const all = records(root);
@@ -129,7 +129,7 @@ export function init(root:string,input:InitInput) {
       return {status:'existing',record:plan.record,check:check(root,plan.record.id)};
     }
     const rec = plan.record;
-    const rootConfig = z.object({gitUser:z.string().min(1)}).parse(readJson(inside(root,'.wk/config.json')));
+    const rootConfig = z.object({gitUser:z.string().min(1)}).parse(readJson(inside(root,'.workhub/config.json')));
     const f = journalFile(root,rec.id);
     const log = exists(f) ? JournalSchema.parse(readJson(f)) : {schemaVersion:1 as const,id:rec.id,requestHash:rec.requestHash,record:rec,status:'running' as 'running'|'failed'|'complete',done:[] as string[],error:undefined as string|undefined};
     log.status='running'; delete log.error; jsonWrite(f,log);
@@ -175,7 +175,7 @@ export function check(root:string,id?:string) {
   if (id && !selected.length) fail(`没有该工作：${id}`,2);
   const errors:string[]=[]; const warnings:string[]=[];
   for (const rec of selected) {
-    if (!rec.components.trellis) errors.push(`旧工作缺少必需的 Trellis 主目录：${rec.id}；需要迁移，未自动修改。`);
+    if (!rec.components.trellis) errors.push(`工作缺少必需的 Trellis 主目录：${rec.id}`);
     for (const c of [rec.components.work,rec.components.trellis,...rec.components.code].filter(c=>c!==undefined)) {
       const p=inside(root,c.path);
       if (!exists(p)) { errors.push(`缺少目录：${c.path}`); continue; }
@@ -184,9 +184,9 @@ export function check(root:string,id?:string) {
     if (rec.components.work && !exists(inside(root,`${rec.components.work.path}/README.md`))) errors.push(`缺少业务 README：${rec.id}`);
     if (rec.components.trellis) {
       const p=inside(root,`${rec.components.trellis.path}/AGENTS.md`);
-      if (!exists(p) || !fs.readFileSync(p,'utf8').includes('<!-- WK:START')) errors.push(`缺少 WK 入口：${rec.id}`);
+      if (!exists(p) || !fs.readFileSync(p,'utf8').includes('<!-- WORKHUB:START')) errors.push(`缺少 WORKHUB 入口：${rec.id}`);
       if (!rec.taskPath) errors.push(`缺少任务入口：${rec.id}`);
-      else for (const name of ['task.json','wk-context.md','wk-handoff.md']) if (!exists(inside(root,`${rec.taskPath}/${name}`))) errors.push(`缺少任务文件：${rec.taskPath}/${name}`);
+      else for (const name of ['task.json','workhub-context.md','workhub-handoff.md']) if (!exists(inside(root,`${rec.taskPath}/${name}`))) errors.push(`缺少任务文件：${rec.taskPath}/${name}`);
     }
     if (!exists(inside(root,rec.workspace.expectedPath))) warnings.push(`工作区待创建：${rec.workspace.expectedPath}`);
   }
@@ -194,9 +194,9 @@ export function check(root:string,id?:string) {
     const p=inside(root,`navigation/indexes/工作目录/${year}.md`);
     if (!exists(p) || fs.readFileSync(p,'utf8')!==indexText(all,year)) errors.push(`年度索引不一致：${year}`);
   }
-  const runs=inside(root,'.wk/runs');
+  const runs=inside(root,'.workhub/runs');
   if (exists(runs)) for(const n of fs.readdirSync(runs).filter(n=>n.endsWith('.json'))) {
-    const j=JournalSchema.parse(readJson(inside(root,`.wk/runs/${n}`)));
+    const j=JournalSchema.parse(readJson(inside(root,`.workhub/runs/${n}`)));
     if ((!id || j.id===id) && j.status!=='complete') warnings.push(`未完成操作：${j.id}；状态 ${j.status}，使用相同参数重试并检查日志。`);
   }
   return {ok:errors.length===0,errors,warnings,works:selected.length};

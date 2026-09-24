@@ -30,24 +30,24 @@ it('exposes workhub as the only package command and uses it in help', () => {
   expect(version.stdout.trim()).toBe(manifest.version);
 });
 
-it('reads a work root configured before the command rename', () => {
+it('reads a configured work root through the WorkHub pointer', () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'workhub-cli-command-'));
   temporaryRoots.push(temp);
   const root = path.join(temp, 'WorkHub');
   const registry = path.join(root, 'navigation/registry/works');
-  fs.mkdirSync(path.join(root, '.wk'), { recursive: true });
+  fs.mkdirSync(path.join(root, '.workhub'), { recursive: true });
   fs.mkdirSync(registry, { recursive: true });
-  fs.writeFileSync(path.join(root, '.wk/config.json'), JSON.stringify({ schemaVersion: 1, layoutVersion: 1, templateVersion: 1, gitUser: 'tester' }));
+  fs.writeFileSync(path.join(root, '.workhub/config.json'), JSON.stringify({ schemaVersion: 1, layoutVersion: 1, templateVersion: 1, gitUser: 'tester' }));
   const record = {
-    schemaVersion: 1, id: '20260924-sample', name: '旧工作', slug: 'sample', createdDate: '2026-09-24', lifecycle: 'active',
+    schemaVersion: 1, id: '20260924-sample', name: '测试工作', slug: 'sample', createdDate: '2026-09-24', lifecycle: 'active',
     components: { trellis: { path: 'trellis/sample', mode: 'created' }, code: [] },
-    operations: [], workspace: { expectedPath: 'navigation/workspaces/旧工作.code-workspace' }, requestHash: 'fixture',
+    operations: [], workspace: { expectedPath: 'navigation/workspaces/测试工作.code-workspace' }, requestHash: 'fixture',
   };
   fs.writeFileSync(path.join(registry, `${record.id}.json`), JSON.stringify(record));
   const pointer = path.join(temp, 'local.json');
   fs.writeFileSync(pointer, JSON.stringify({ schemaVersion: 1, root }));
 
-  const result = runCli(['list', '--json'], { ...process.env, WK_CONFIG_PATH: pointer });
+  const result = runCli(['list', '--json'], { ...process.env, WORKHUB_CONFIG_PATH: pointer });
   expect(result.status).toBe(0);
   expect(JSON.parse(result.stdout)).toMatchObject([{ id: record.id, name: record.name }]);
   expect(fs.readFileSync(pointer, 'utf8')).toBe(JSON.stringify({ schemaVersion: 1, root }));

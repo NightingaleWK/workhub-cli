@@ -10,7 +10,7 @@ const fixtures: string[] = [];
 afterEach(() => { for (const root of fixtures.splice(0)) fs.rmSync(root, { recursive: true, force: true }); });
 
 function fixture(lockVersion = '1.2.3', rootVersion = '1.2.3', cliVersion = '1.2.3') {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'wk-version-check-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'workhub-version-check-'));
   fixtures.push(root);
   fs.mkdirSync(path.join(root, 'dist'));
   fs.writeFileSync(path.join(root, 'package.json'), JSON.stringify({ version: '1.2.3' }));

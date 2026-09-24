@@ -8,6 +8,6 @@ context: |
   本仓库自行维护的代理指令和工作约定也必须使用简体中文；命令、路径和代码标识保留原文。
   本项目由一人维护，是 Windows 优先的 TypeScript/Node.js 命令行工具，命令为 workhub。
   每项新工作必须创建或关联真实 Trellis 空间及正式任务；只有 work 和 code 可选。
-  WorkHub 用户目录和业务数据不属于本源码仓库。测试使用临时根目录和 WK_CONFIG_PATH。
+  WorkHub 用户目录和业务数据不属于本源码仓库。测试使用临时根目录和 WORKHUB_CONFIG_PATH。
   完成的 OpenSpec 变更经验证后提交并推送 Git；npm 版本发布由维护者另行决定。
   完成并推送后，主动提醒维护者判断版本号、GitHub 标签及 npm 发包节点，不自行执行发布动作。

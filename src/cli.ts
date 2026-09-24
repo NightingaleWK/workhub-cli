@@ -9,7 +9,7 @@ import { previewLines, renderPreview } from './preview.js';
 import { ensureTrellis, installTrellisPackage } from './dependencies.js';
 import { findTrellisCommand, verifyTrellis } from './trellis.js';
 import { check, init, install, installPlan, makePlan, show, type InitInput } from './core.js';
-import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
+import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WorkHubError } from './common.js';
 
 const packageVersion=(JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8')) as {version:string}).version;
 const program=new Command().name('workhub').description('WorkHub 工作初始化与登记工具').version(packageVersion).exitOverride();
@@ -30,7 +30,7 @@ function output(value:unknown) {
     console.log(`编号：${v.record.id}`);
     for(const [label,comp] of [['业务',v.record.components.work],['Trellis',v.record.components.trellis],...v.record.components.code.map((c:any)=>['代码',c])])if(comp)console.log(`${label}：${comp.path}`);
     console.log(`工作区预期位置：${v.record.workspace.expectedPath}\n工作区：${v.workspace??'请在 VS Code 中手动创建'}\n主目录：${v.primary??'未启用 Trellis'}`);
-    if(v.record.taskPath)console.log(`任务入口：${v.record.taskPath}/wk-context.md`);
+    if(v.record.taskPath)console.log(`任务入口：${v.record.taskPath}/workhub-context.md`);
     console.log('未自动提交、推送或创建应用项目。');
     if(v.check && !v.check.ok)for(const e of v.check.errors)console.error(`错误：${e}`);
     return;
@@ -66,7 +66,7 @@ options(program.command('install').description('配置根目录并建立公共�
   if(interactive(o)) { p.intro('配置 WorkHub'); let defaultRoot=path.join(os.homedir(),'WorkHub'); try{defaultRoot=rootResolve();}catch{} root=answer(await p.text({message:'工作根目录（回车使用默认值）',placeholder:root??defaultRoot,defaultValue:root??defaultRoot})); }
   if(!root) root=path.join(os.homedir(),'WorkHub');
   root=path.resolve(root);const plan=installPlan(root);
-  if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 NightingaleWK',defaultValue:gitUser,validate:s=>(s?.trim()||gitUser)?undefined:'必须填写 Git 用户名'}));
+  if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 Alice',defaultValue:gitUser,validate:s=>(s?.trim()||gitUser)?undefined:'必须填写 Git 用户名'}));
   else if(!gitUser) fail('未找到全局 Git 用户名，请在 workhub install 中填写或先设置 git config --global user.name。',2);
   const trellisFound=!!findTrellisCommand();
   const executionPlan={...plan,gitUser,trellis:trellisFound?'已安装':'未安装，执行前需要同意 npm 全局安装'};
@@ -136,7 +136,7 @@ try { await program.parseAsync(); }
 catch(e) {
   if(e instanceof CommanderError && e.exitCode===0)process.exitCode=0;
   else {
-    const code=e instanceof WkError?e.code:e instanceof CommanderError||e instanceof ZodError?2:1;
+    const code=e instanceof WorkHubError?e.code:e instanceof CommanderError||e instanceof ZodError?2:1;
     const message=e instanceof Error?e.message:String(e);
     if(jsonMode)output({ok:false,error:message,code}); else console.error(`错误：${message}`);
     process.exitCode=code;

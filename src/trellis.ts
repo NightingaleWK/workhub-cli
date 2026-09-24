@@ -26,7 +26,7 @@ export function trellisPreflight() {
   const version = run(t.command, [...t.prefix, '--version']);
   const help = run(t.command, [...t.prefix, 'init', '--help']);
   for (const option of ['--codex', '--no-monorepo', '--user']) if (!help.includes(option)) fail(`当前 Trellis 初始化接口不兼容：缺少 ${option}`);
-  const python = process.env.WK_PYTHON ?? 'python';
+  const python = process.env.WORKHUB_PYTHON ?? 'python';
   run(python, ['--version']);
   return { ...t, version, python };
 }
@@ -34,15 +34,15 @@ export function agentsTemplate() { return fs.readFileSync(fileURLToPath(new URL(
 export function validateAgents(p: string) {
   if (!exists(p)) return;
   const text = fs.readFileSync(p, 'utf8');
-  if (text.includes('<!-- WK:')) {
-    const block = text.match(/<!-- WK:START v1 -->[\s\S]*?<!-- WK:END -->/g);
-    if (block?.length !== 1 || block[0]!.trim() !== agentsTemplate().trim()) fail(`WK 指令区块存在人工修改或版本冲突，请先审阅：${p}`, 3);
+  if (text.includes('<!-- WORKHUB:')) {
+    const block = text.match(/<!-- WORKHUB:START v1 -->[\s\S]*?<!-- WORKHUB:END -->/g);
+    if (block?.length !== 1 || block[0]!.trim() !== agentsTemplate().trim()) fail(`WORKHUB 指令区块存在人工修改或版本冲突，请先审阅：${p}`, 3);
   }
 }
 export function addAgents(p: string) {
   validateAgents(p);
   const text = exists(p) ? fs.readFileSync(p, 'utf8') : '';
-  if (!text.includes('<!-- WK:START')) {
+  if (!text.includes('<!-- WORKHUB:START')) {
     // Preserve Trellis and user-owned text exactly, append only our own block.
     fs.writeFileSync(p, text + (text && !text.endsWith('\n') ? '\n' : '') + '\n' + agentsTemplate());
   }
@@ -74,7 +74,7 @@ export function createTask(root: string, record: WorkRecord, python: string): st
   const rel = found[0]!;
   const taskDir = inside(root,rel);
   const rows = [record.components.work, ...record.components.code, record.components.trellis].filter(Boolean).map(c=>`- ${c!.path}`).join('\n');
-  ensureFile(inside(root,`${rel}/wk-context.md`), `# ${record.name}\n\n工作编号：${record.id}\n工作日期：${record.createdDate}\n\nWorkHub 根目录（相对于本文件所在目录）：\`${slash(path.relative(taskDir,root))}\`\n\n以下路径相对于 WorkHub 根目录：\n${rows}\n\n登记：navigation/registry/works/${record.id}.json\n工作区预期路径：${record.workspace.expectedPath}\n\n先读取业务 README 和本任务 wk-handoff.md。所有代码写入 code，业务证据写入 work。未启用对应目录时先说明缺口。\n`);
-  ensureFile(inside(root,`${rel}/wk-handoff.md`), `# 工作交接\n\n工作编号：${record.id}\n\n## 已完成\n- 工作目录与管理入口初始化。\n\n## 未验证\n- 业务需求、实现和验收尚未开始。\n\n## 下一步\n- 与用户明确目标、范围和完成条件，更新业务 README。\n\n## 证据和版本\n- 尚无业务验证结果；Git 未自动提交。\n`);
+  ensureFile(inside(root,`${rel}/workhub-context.md`), `# ${record.name}\n\n工作编号：${record.id}\n工作日期：${record.createdDate}\n\nWorkHub 根目录（相对于本文件所在目录）：\`${slash(path.relative(taskDir,root))}\`\n\n以下路径相对于 WorkHub 根目录：\n${rows}\n\n登记：navigation/registry/works/${record.id}.json\n工作区预期路径：${record.workspace.expectedPath}\n\n先读取业务 README 和本任务 workhub-handoff.md。所有代码写入 code，业务证据写入 work。未启用对应目录时先说明缺口。\n`);
+  ensureFile(inside(root,`${rel}/workhub-handoff.md`), `# 工作交接\n\n工作编号：${record.id}\n\n## 已完成\n- 工作目录与管理入口初始化。\n\n## 未验证\n- 业务需求、实现和验收尚未开始。\n\n## 下一步\n- 与用户明确目标、范围和完成条件，更新业务 README。\n\n## 证据和版本\n- 尚无业务验证结果；Git 未自动提交。\n`);
   return rel;
 }

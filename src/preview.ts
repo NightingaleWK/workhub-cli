@@ -34,7 +34,7 @@ export function previewLines(plan: Plan | {root:string;directories:string[];gitU
   return [
     `工作目录  ${plan.root}`,`Git 用户  ${plan.gitUser??'未设置'}`,`Trellis   ${plan.trellis??'待检查'}`,'',
     '公共目录：',
-    ...plan.directories.filter(p=>!p.startsWith('.wk')).map(p=>`  ${exists(path.join(plan.root,p))?'已存在，保留':'创建'}  ${p}/`),
+    ...plan.directories.filter(p=>!p.startsWith('.workhub')).map(p=>`  ${exists(path.join(plan.root,p))?'已存在，保留':'创建'}  ${p}/`),
     '',repo&&same(repo,navigation)?'navigation 已是 Git 仓库，保留现有仓库。':'navigation 将初始化为 Git 仓库。',
     '保存本机配置及 Git 用户名。','VS Code 工作区由你稍后创建。'
   ];

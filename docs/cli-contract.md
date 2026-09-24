@@ -4,7 +4,7 @@
 
 ## 命令入口
 
-当前源码包只提供 `workhub` 可执行命令，帮助和后续操作提示也使用该名称。npm 包名仍是 `workhub-cli`；已发布的旧包可能仍提供 `wk`，应以实际安装版本为准。命令更名不迁移 `.wk`、`WK_CONFIG_PATH` 或既有登记与任务文件。
+npm 包提供 `workhub` 可执行命令，帮助和后续操作提示使用同一名称。npm 包名是 `workhub-cli`。根配置位于 `.workhub/config.json`，本机指针可由 `WORKHUB_CONFIG_PATH` 指定。
 
 ## install
 
@@ -35,7 +35,7 @@ Trellis 始终包含。none 只单独使用；未知组件报错。关联路径�
 
 确认前不创建项目文件。返回修改保留之前答案；修改后重新计算编号、路径并检查冲突。确认后执行依赖预检查及有日志的初始化。init 的 dry-run 只验证计划，不执行完整运行环境检查。
 
-新空间通过保存的 gitUser 执行 Trellis 初始化；旧根缺 gitUser 时先重跑 install。关联已有空间不重新初始化身份。任务创建使用 --no-start，不切换共享当前任务。
+新空间通过保存的 gitUser 执行 Trellis 初始化。关联已有空间不重新初始化身份。任务创建使用 --no-start，不切换共享当前任务。
 
 工作区只预留，不生成文件。新仓库没有首个自动提交，用户仍需有效 Git 提交身份。
 
@@ -43,9 +43,9 @@ Trellis 始终包含。none 只单独使用；未知组件报错。关联路径�
 
 - list/show 读取登记，show 检查工作区文件是否存在。
 - check 检查已知目录、独立 Git 根、业务 README、AGENTS 入口、任务文件及年度索引。
-- 旧工作缺 Trellis 报错；缺工作区仅提示待创建。
+- 工作缺 Trellis 报错；缺工作区仅提示待创建。
 - 相同参数 init 可恢复已知未完成操作；未知目标、参数不同或指令区块冲突时报错。
-- 没有通用 repair/migrate/archive 命令，也不扫描所有 Markdown 链接。
+- 没有通用 repair/archive 命令，也不扫描所有 Markdown 链接。
 
 ## 输出
 

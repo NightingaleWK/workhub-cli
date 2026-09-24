@@ -4,22 +4,13 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `workhub`。�
 
 源码：[NightingaleWK/workhub-cli](https://github.com/NightingaleWK/workhub-cli)。许可证：[MIT](LICENSE)。版本记录见 [CHANGELOG.md](CHANGELOG.md)。
 
-## 版本与文档范围
+## 版本
 
-源码包版本以 [package.json](package.json) 的 `version` 为准；npm 当前公开版本应实时运行 `npm view workhub-cli dist-tags.latest` 查询。以下是 2026-09-24 的历史核对记录：当日 `0.1.2` 已发布且 npm `latest` 为 `0.1.2`，公开 registry 隔离安装后的版本、install/init/check 验证通过。本文功能说明面向当前源码。
-
-| 版本 | 已包含功能 |
-|---|---|
-| 0.1.1（已发布） | Trellis 必选、Git 用户名配置；旧版带边框预览，需提前手工安装 Trellis |
-| 0.1.2（已发布） | 左侧流程线预览、返回修改、目录状态分组、经同意自动安装 Trellis |
-
-升级前运行 `npm view workhub-cli dist-tags.latest` 核对可用版本。当前源码安装后运行 `workhub --version`；已发布的 `0.1.2` 仍使用旧命令，不能用它验证尚未发布的改名。
+源码包版本以 [package.json](package.json) 的 `version` 为准。发布与标签操作见 [发布流程](docs/release-process.md)。
 
 ## 安装与第一次使用
 
 需要 Node.js >=22.12（推荐受支持 LTS）、Git 和 Python 3。`workhub install` 会检测 Trellis，未安装时询问是否执行 `npm install -g @mindfoldhq/trellis@latest`，同意后自动安装并验证。每项工作必须创建或关联 Trellis 管理空间，它作为 Codex 主目录，并在根目录保存 AGENTS.md。
-
-当前源码的命令改名尚未发布到 npm。需要使用 `workhub` 时，按下方步骤从源码打包安装；待包含改名的版本发布后，再使用 `npm install -g workhub-cli@latest` 升级。
 
 也可以克隆源码后本地打包安装：
 
@@ -43,7 +34,7 @@ workhub init
 
 或者开发调试使用 `npm link`。安装 npm 包与 `workhub install` 不同：前者安装命令，后者配置工作根目录。
 
-`workhub install` 默认目录为当前用户主目录下的 WorkHub，例如 `C:\Users\<用户名>\WorkHub`。回车接受默认值，也可输入 `D:\WorkHub`。随后读取全局 `git config --global user.name` 作为建议的开发者名称；这不是 GitHub 登录名，也不要求与 GitHub 用户名相同。读取不到时要求人工填写。该名称保存到 `.wk/config.json`，后续传给 `trellis init -u`。workhub 不修改全局 Git 用户名，也不为新仓库设置 user.name/user.email。工具不自动识别或保证磁盘是 SSD。
+`workhub install` 默认目录为当前用户主目录下的 WorkHub，例如 `C:\Users\<用户名>\WorkHub`。回车接受默认值，也可输入 `D:\WorkHub`。随后读取全局 `git config --global user.name` 作为建议的开发者名称；这不是 GitHub 登录名，也不要求与 GitHub 用户名相同。读取不到时要求人工填写。该名称保存到 `.workhub/config.json`，后续传给 `trellis init -u`。workhub 不修改全局 Git 用户名，也不为新仓库设置 user.name/user.email。工具不自动识别或保证磁盘是 SSD。
 
 `workhub init` 询问中文名、英文代号、日期（默认本地今天）。Trellis 固定必选，多选菜单只包含 work 和 code，可以全部不选以创建仅有 Trellis 的工作。Trellis 始终可以新建或关联已有管理仓库；选择 code 时可以新建或关联代码仓库。最后展示执行计划并确认。
 
@@ -82,7 +73,7 @@ workhub init --name "尾气后续排查" --slug exhaust-followup --components wo
 workhub show 20260924-exhaust-analysis --json
 ```
 
-`--components work,code` 选择可选组成部分，Trellis 始终包含。省略参数默认 work + Trellis；`--components none` 表示仅 Trellis。旧的显式包含 trellis 的写法仍支持。复用路径必须相对于根目录，并处于对应 trellis/code 分类内且是独立 Git 仓库。
+`--components work,code` 选择可选组成部分，Trellis 始终包含。省略参数默认 work + Trellis；`--components none` 表示仅 Trellis。复用路径必须相对于根目录，并处于对应 trellis/code 分类内且是独立 Git 仓库。
 
 非交互写入必须传 `--yes`，缺少必要参数直接报错。JSON 输出适合程序读取；没有 TTY 时普通输出也使用 JSON。dry-run 不写文件。install 的 dry-run 会读取 Git 用户名、检查目录及探测 Trellis，必要时调用 npm root --global；不会安装依赖。init 的 dry-run 检查计划、路径和登记，不执行完整依赖预检查。执行 init 时再检查 Trellis 接口和 Python。
 
@@ -92,8 +83,8 @@ workhub show 20260924-exhaust-analysis --json
 
 ```text
 <root>
-├─ .wk/config.json
-├─ .wk/runs/                         # 执行与恢复日志
+├─ .workhub/config.json
+├─ .workhub/runs/                         # 执行与恢复日志
 ├─ trellis/<slug>/                   # 必须正式初始化或关联已有空间
 ├─ knowledge/work/YYYY/YYYYMMDD-中文名/
 ├─ knowledge/archive/
@@ -123,9 +114,9 @@ python .trellis/scripts/task.py create <标题> --slug <工作编号> --descript
 
 workhub install 仅在 Trellis 缺失且用户同意时安装全局 Trellis，不自动升级已有版本、不启用全局 hooks，也不自动切换当前任务。Trellis 可能生成 bootstrap 任务，这是它自身行为。
 
-保留 Trellis 原 AGENTS.md，追加 `WK:START v1` 到 `WK:END` 区块；已有区块被人工修改时停止并报告冲突，不覆盖。
+保留 Trellis 原 AGENTS.md，追加 `WORKHUB:START v1` 到 `WORKHUB:END` 区块；已有区块被人工修改时停止并报告冲突，不覆盖。
 
-正式任务中生成 `wk-context.md`（目录映射）和 `wk-handoff.md`（交接入口）。Trellis 文件夹日期前缀由其自身按当前日期生成，不等于用户输入的工作日期；登记保留准确 taskPath，不猜路径。
+正式任务中生成 `workhub-context.md`（目录映射）和 `workhub-handoff.md`（交接入口）。Trellis 文件夹日期前缀由其自身按当前日期生成，不等于用户输入的工作日期；登记保留准确 taskPath，不猜路径。
 
 在 Codex 本地项目中选择 Trellis 为主，其余相关目录为附加目录。可以在同一个对话中分析、编码和整理文档。新对话提供工作编号，按 AGENTS.md 阅读任务入口。
 
@@ -133,21 +124,17 @@ workhub install 仅在 Trellis 缺失且用户同意时安装全局 Trellis，�
 
 ## 配置与恢复
 
-本机指针：`%LOCALAPPDATA%\workhub-cli\config.json`；非 Windows 回退到用户 `.config`。测试可用 `WK_CONFIG_PATH` 指定隔离文件。Python 可通过 `WK_PYTHON` 指定可执行文件路径。
+本机指针：`%LOCALAPPDATA%\workhub-cli\config.json`；非 Windows 回退到用户 `.config`。测试可用 `WORKHUB_CONFIG_PATH` 指定隔离文件。Python 可通过 `WORKHUB_PYTHON` 指定可执行文件路径。
 
-工作登记保存根目录相对路径。换设备恢复目录后，用 `workhub install --root <恢复位置>` 注册。已有业务文件保留，旧根不会自动搬迁。重复 install 会保存本次确认的 gitUser 并重新登记本机根指针，不能理解为配置文件完全不变。当前重装默认建议来自全局 Git 配置，不自动沿用先前手工填写的名字。
+工作登记保存根目录相对路径。换设备恢复目录后，用 `workhub install --root <恢复位置>` 注册。已有业务文件保留。重复 install 会保存本次确认的 gitUser 并重新登记本机根指针，不能理解为配置文件完全不变。当前重装默认建议来自全局 Git 配置，不自动沿用先前手工填写的名字。
 
-根配置同时保存 schemaVersion、layoutVersion、templateVersion 和 gitUser。旧根配置缺少 gitUser 时，先重新执行 workhub install；当前 init 不会自动补齐，也没有独立迁移命令。关联已有 Trellis 空间不会重新执行 init -u 或修改其已有开发者身份。
+根配置同时保存 schemaVersion、layoutVersion、templateVersion 和 gitUser。关联已有 Trellis 空间不会重新执行 init -u 或修改其已有开发者身份。
 
-写操作使用 `.wk/write.lock`，异常残留锁不会自动删除。确认没有 workhub 进程工作后，检查锁信息再手动移走它。init 的执行及失败日志位于 `.wk/runs/<工作编号>.json`（install 不生成同类任务日志）；使用完全相同的 init 参数重试。已有目录没有对应恢复记录时，必须明确复用或更换代号。
+写操作使用 `.workhub/write.lock`，异常残留锁不会自动删除。确认没有 workhub 进程工作后，检查锁信息再手动移走它。init 的执行及失败日志位于 `.workhub/runs/<工作编号>.json`（install 不生成同类任务日志）；使用完全相同的 init 参数重试。已有目录没有对应恢复记录时，必须明确复用或更换代号。
 
 失败不会删除用户材料。某些外部步骤可能已完成，因此保留目录和日志供诊断，不宣称所有失败都能自动回滚。目录、登记或模板被人工改变导致冲突时需要先核对。
 
-备份请用 FreeFileSync，包括 `.git`、`.wk`、登记和重要未跟踪附件。不要只备份 Git 跟踪文件。
-
-## 旧工作兼容
-
-旧版缺少 Trellis 的登记仍可通过 list/show 读取，但 check 报告缺少必需主目录；重复 init 会给出明确迁移提示，不静默升级、搬移或覆盖旧资料。新建工作缺少 Trellis/Python 依赖时，在创建项目目录前失败，不生成不完整的成功登记。workhub install 在缺少 Trellis 时提供经用户同意的自动安装；workhub init 本身仍不自动安装依赖。
+备份请用 FreeFileSync，包括 `.git`、`.workhub`、登记和重要未跟踪附件。不要只备份 Git 跟踪文件。
 
 ## 当前限制
 
@@ -178,6 +165,3 @@ npm pack
 - [Trellis 接入说明](docs/trellis-integration.md)
 - [验证与发布状态](docs/validation.md)
 - [版本与发布核对](docs/release-process.md)
-- [本次文档一致性审计](docs/documentation-audit.md)
-
-历史快照在 docs/history 中；它们不作为当前使用规则。

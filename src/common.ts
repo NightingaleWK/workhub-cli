@@ -5,8 +5,8 @@ import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { z } from 'zod';
 
-export class WkError extends Error { constructor(message: string, public code = 1) { super(message); } }
-export const fail = (message: string, code = 1): never => { throw new WkError(message, code); };
+export class WorkHubError extends Error { constructor(message: string, public code = 1) { super(message); } }
+export const fail = (message: string, code = 1): never => { throw new WorkHubError(message, code); };
 export const exists = (p: string) => fs.existsSync(p);
 export const hash = (s: string) => crypto.createHash('sha256').update(s).digest('hex');
 export const slash = (p: string) => p.split(path.sep).join('/');
@@ -71,7 +71,7 @@ export function gitInit(p: string) {
   if (g && !same(g, p)) fail(`拒绝嵌套仓库：${p} 位于 ${g}`, 3);
   if (!g) run('git', ['init', '--initial-branch=main', p]);
 }
-export function localConfigPath() { return process.env.WK_CONFIG_PATH ?? path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), '.config'), 'workhub-cli', 'config.json'); }
+export function localConfigPath() { return process.env.WORKHUB_CONFIG_PATH ?? path.join(process.env.LOCALAPPDATA ?? path.join(os.homedir(), '.config'), 'workhub-cli', 'config.json'); }
 export function rootResolve(input?: string): string {
   if (input) return path.resolve(input);
   const file = localConfigPath();
@@ -88,7 +88,7 @@ export const RecordSchema = z.object({
   requestHash: z.string(),
 });
 export type WorkRecord = z.infer<typeof RecordSchema>;
-export function validateRoot(root: string) { RootSchema.parse(readJson(inside(root, '.wk/config.json'))); }
+export function validateRoot(root: string) { RootSchema.parse(readJson(inside(root, '.workhub/config.json'))); }
 export function records(root: string): WorkRecord[] {
   const dir = inside(root, 'navigation/registry/works');
   if (!exists(dir)) fail(`缺少登记目录：${dir}`);
@@ -99,8 +99,8 @@ export function records(root: string): WorkRecord[] {
   });
 }
 export function withLock<T>(root: string, action: () => T): T {
-  const dir = inside(root, '.wk'); fs.mkdirSync(dir, {recursive:true});
-  const lock = inside(root, '.wk/write.lock');
+  const dir = inside(root, '.workhub'); fs.mkdirSync(dir, {recursive:true});
+  const lock = inside(root, '.workhub/write.lock');
   let fd: number;
   try { fd = fs.openSync(lock, 'wx'); } catch { return fail(`存在写锁：${lock}。确认没有 workhub 进程后，手动检查并移走残留锁；不自动删除。`, 3); }
   fs.writeFileSync(fd, JSON.stringify({pid:process.pid, host:os.hostname(), startedAt:new Date().toISOString()}));

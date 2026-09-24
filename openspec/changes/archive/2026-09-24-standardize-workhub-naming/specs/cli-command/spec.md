@@ -1,10 +1,6 @@
-# cli-command Specification
+# Spec Delta
 
-## Purpose
-
-此能力规定 WorkHub npm 包在全局安装后提供 `workhub` 命令，并让帮助、提示和后续操作使用同一名称。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 仅提供 `workhub` 命令
 
