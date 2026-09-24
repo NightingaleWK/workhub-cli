@@ -6,7 +6,7 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 
 ## 版本与文档范围
 
-2026-09-24 核对：`0.1.2` 已发布，npm `latest` 为 `0.1.2`。已从公开 registry 隔离安装，并通过版本、install/init/check 验证。本文功能说明面向当前源码。
+源码包版本以 [package.json](package.json) 的 `version` 为准；npm 当前公开版本应实时运行 `npm view workhub-cli dist-tags.latest` 查询。以下是 2026-09-24 的历史核对记录：当日 `0.1.2` 已发布且 npm `latest` 为 `0.1.2`，公开 registry 隔离安装后的版本、install/init/check 验证通过。本文功能说明面向当前源码。
 
 | 版本 | 已包含功能 |
 |---|---|
@@ -40,8 +40,8 @@ cd workhub-cli
 npm ci
 npm run build
 npm test
-npm pack
-npm install -g .\workhub-cli-0.1.2.tgz
+$packageFile = (npm pack --silent | Select-Object -Last 1).Trim()
+npm install -g ".\$packageFile"
 wk --version
 wk install
 wk init
@@ -172,6 +172,7 @@ wk install 仅在 Trellis 缺失且用户同意时安装全局 Trellis，不自�
 ```powershell
 npm run check
 npm run build
+npm run check:version
 npm test
 npm pack
 ```
@@ -182,6 +183,7 @@ npm pack
 - [CLI 行为约定](docs/cli-contract.md)
 - [Trellis 接入说明](docs/trellis-integration.md)
 - [验证与发布状态](docs/validation.md)
+- [版本与发布核对](docs/release-process.md)
 - [本次文档一致性审计](docs/documentation-audit.md)
 
 历史快照在 docs/history 中；它们不作为当前使用规则。

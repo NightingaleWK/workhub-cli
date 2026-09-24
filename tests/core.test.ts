@@ -148,6 +148,11 @@ describe('workspace behaviors',()=>{
  });
 });
 describe('validation and CLI',()=>{
+ it('reports the version from the package manifest',()=>{
+  const expected=(readJson(path.resolve('package.json')) as {version:string}).version;
+  const result=spawnSync(process.execPath,[path.resolve('dist/cli.js'),'--version'],{encoding:'utf8'});
+  expect(result.status).toBe(0);expect(result.stdout.trim()).toBe(expected);
+ });
  it('compares Windows short and long paths as the same repository',()=>{
   if(process.platform!=='win32')return;
   const longPath=path.join(temp,'Long Directory For Alias');fs.mkdirSync(longPath);

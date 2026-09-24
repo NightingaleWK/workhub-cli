@@ -1,6 +1,6 @@
 # 当前开发状态与后续计划
 
-更新：2026-09-24。源码版本 0.1.2。原始设计过程保留在 [历史计划](history/development-plan-v1.md)，不再作为当前操作约定。使用说明见 [README](../README.md)。
+更新：2026-09-24。源码包版本以 [package.json](../package.json) 为准。原始设计过程保留在 [历史计划](history/development-plan-v1.md)，不再作为当前操作约定。使用说明见 [README](../README.md)。
 
 ## 固定规则
 
@@ -60,11 +60,11 @@ install 读取全局 Git user.name 作为建议，交互可修改；不更改全
 
 ## 验证与后续
 
-当前 32 项自动测试通过；核心测试用 fixture 隔离 Trellis 进程，真实外部接入和自动安装另外验证。详见 [验证状态](validation.md) 和 [CLI 约定](cli-contract.md)。
+自动测试使用 fixture 隔离 Trellis 进程，真实外部接入和自动安装另行验证；各次测试数量与结果见 [验证状态](validation.md)，行为边界见 [CLI 约定](cli-contract.md)。
 
 尚需开展：
 
-1. 0.1.2 已完成 npm 发布和公开安装验证，后续继续收集使用反馈。
+1. 0.1.2 的 npm 发布和公开安装验证已于 2026-09-24 完成；后续继续收集使用反馈。
 2. 旧工作补齐 Trellis、追加组成部分和配置迁移命令。
 3. AI 驱动归档：业务验收通过后再移动 work、更新索引和引用，代码不随之移动。
 4. operations 关联、来源索引和模板受控升级。

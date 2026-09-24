@@ -16,7 +16,7 @@ AGENTS.md 的 TRELLIS 区块不修改；wk 在其后追加自己的管理区块�
 
 真实验证覆盖 trellis、work+trellis、code+trellis、work+code+trellis，以及跨年度新工作复用既有 Trellis/代码仓库。各任务均生成正式 task.json、目录映射和交接文件，检查通过。
 
-## 0.1.2 自动安装流程
+## 0.1.2 引入的自动安装流程
 
 install 中依赖缺失时，用户同意后执行 npm install -g @mindfoldhq/trellis@latest；非交互需 --install-trellis，--yes 本身不授权。已有安装不升级，dry-run 不安装，拒绝或失败则不继续写入根配置。
 

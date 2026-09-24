@@ -1,4 +1,4 @@
-# CLI 行为约定（0.1.2 源码）
+# CLI 行为约定（当前源码）
 
 使用入口见 [README](../README.md)，可安装版本见 [验证状态](validation.md)。
 

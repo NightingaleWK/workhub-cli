@@ -1,6 +1,6 @@
 # 验证与发布状态
 
-更新：2026-09-24。旧记录保留在 [0.1.0 验证快照](history/validation-0.1.0.md)，不能将其“未提交、未发布、21 项测试”等描述用于当前版本。
+记录日期：2026-09-24。下表是当日验证与发布快照，不代表此后 npm 的实时状态；当前源码包版本以 [package.json](../package.json) 为准，npm 当前公开版本应运行 `npm view workhub-cli dist-tags.latest` 查询。旧记录保留在 [0.1.0 验证快照](history/validation-0.1.0.md)，不能将其“未提交、未发布、21 项测试”等描述用于当前版本。
 
 ## 发布状态
 
@@ -9,7 +9,7 @@
 | GitHub | 公开 MIT 仓库，main 持续提交推送 |
 | 0.1.1 | npm 已发布，公开安装后 install/init/check 验证通过 |
 | 0.1.2 | npm 已发布，公开安装后的版本、install/init/check 验证通过 |
-| npm latest | 发布后通过 npm view 实测为 0.1.2 |
+| 2026-09-24 npm latest | 当日发布后通过 npm view 实测为 0.1.2 |
 
 标签存在、上传开始或网页认证完成都不单独等于发布成功。需要 npm publish 成功、registry 元数据及公开安装验证。已有 tgz 不会随之后的 README 编辑自动变化。
 
@@ -30,6 +30,12 @@
 | GitHub CI | 配置 Windows Node 22/24；具体结论以对应提交的 Actions 运行记录为准 |
 
 核心测试对 Trellis 使用 fixture；真实接口与全局安装是独立隔离实验，不能混为一谈。Git 配置测试也使用临时全局配置文件。
+
+## 2026-09-24 版本一致性变更验证
+
+本次运行 `npm run check`、`npm run build`、`npm run check:version`、`npm test` 和 `npm pack --dry-run --json` 均通过；自动测试为 3 个文件、36 项通过。打包预览包含 LICENSE、`templates/agents.md`、`dist/cli.js` 和包清单。归档前 `openspec validate centralize-version-metadata --strict` 通过；归档后主规格和归档变更的严格验证也通过。所修改文档的本地链接均存在，`git diff --check` 无空白错误。
+
+另在系统临时目录执行 `npm pack` 和隔离的 `npm install --prefix ... --ignore-scripts`，已安装包的清单版本与 `wk --version` 均为 `0.1.2`；未修改正式全局安装。只读核对历史标签发现 `v0.1.2` 指向早于本次工作的提交，故本次不复用该标签。此次验证没有修改包版本、创建标签或发布 npm；这些动作由维护者另行决定。
 
 ## 未验收边界
 
