@@ -10,7 +10,7 @@ import { findTrellisCommand, verifyTrellis } from './trellis.js';
 import { check, init, install, installPlan, makePlan, show, type InitInput } from './core.js';
 import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
 
-const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version('0.1.1').exitOverride();
+const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version('0.1.2').exitOverride();
 let jsonMode=process.argv.includes('--json');
 const interactive=(o:Opts)=>!o.yes && !o.json && !!process.stdin.isTTY && !!process.stdout.isTTY;
 type Opts={root?:string;yes?:boolean;json?:boolean;dryRun?:boolean;installTrellis?:boolean;name?:string;slug?:string;date?:string;components?:string;trellisExisting?:string;codeExisting?:string;workspaceName?:string};

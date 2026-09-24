@@ -11,7 +11,7 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 从 npm 安装公开版本：
 
 ```powershell
-npm install -g workhub-cli@0.1.1
+npm install -g workhub-cli@0.1.2
 wk install
 wk init
 ```
@@ -30,7 +30,7 @@ npm ci
 npm run build
 npm test
 npm pack
-npm install -g .\workhub-cli-0.1.1.tgz
+npm install -g .\workhub-cli-0.1.2.tgz
 wk --version
 wk install
 wk init

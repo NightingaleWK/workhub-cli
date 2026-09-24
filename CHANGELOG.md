@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.2 — 2026-09-24
 
 - Group init previews into work identity, labeled Trellis/work/code destinations, management actions, and manually created VS Code workspaces; separate long paths from labels.
 
