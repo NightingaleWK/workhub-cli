@@ -18,7 +18,9 @@ npm pack --dry-run --json
 
 `npm run check`、`npm run build`、`npm run check:version` 和 `npm test` 均通过，自动测试为 4 个文件、38 项。`npm pack --dry-run --json` 包含 LICENSE、`templates/agents.md`、`dist/cli.js` 和包清单，包只声明 `workhub` 可执行入口。
 
-使用当前源码生成 `workhub-cli-0.2.0.tgz`，在独立 npm 前缀安装后仅生成 `workhub` 的三个平台包装器。隔离安装的 `--version` 输出 `0.2.0`，帮助用法为 `workhub`；通过临时 `WORKHUB_CONFIG_PATH` 运行 `check --json` 成功。本节是发布前的本地验收结果，npm registry 验收将在发布后记录。
+使用当前源码生成 `workhub-cli-0.2.0.tgz`，在独立 npm 前缀安装后仅生成 `workhub` 的三个平台包装器。隔离安装的 `--version` 输出 `0.2.0`，帮助用法为 `workhub`；通过临时 `WORKHUB_CONFIG_PATH` 运行 `check --json` 成功。
+
+npm registry 已公开 `0.2.0`，`latest` 指向 `0.2.0`，公开包的 SHA-1 为 `22b807fad2cb693abc841995cb7991903dd3be51`，与本地验收 tarball 一致。从公开 registry 在新 npm 缓存和独立前缀安装后，`workhub --version`、命令包装器和 `check --json` 均通过。本机全局命令也已安装公开版本并用临时配置验证。Git 标签 `v0.2.0` 指向发布提交 `ad48a61f6db758e3420308d04de27bd8f0a86ede`。
 
 ## 0.1.2 源码验收结果
 
