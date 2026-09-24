@@ -1,54 +1,52 @@
-# 0.1.0 验证与交接
+# 验证与发布状态
 
-日期：2026-09-24。
+更新：2026-09-24。旧记录保留在 [0.1.0 验证快照](history/validation-0.1.0.md)，不能将其“未提交、未发布、21 项测试”等描述用于当前版本。
 
-## 已完成
+## 发布状态
 
-- TypeScript CLI 与 npm bin 入口；install/init/list/show/check。
-- 交互输入、日期默认、多选、复用已有仓库、工作区冲突处理及执行预览。
-- 根配置、独立 Git 仓库、登记、年度索引、入口模板与交接。
-- Trellis 正式初始化和任务创建，不更改共享当前任务。
-- AI 参数模式、JSON、退出码、dry-run、锁、失败日志与安全重试。
-- 本地 npm 包已生成，未发布到公共 npm，未全局安装到用户环境。
+| 对象 | 当前证据 |
+|---|---|
+| GitHub | 公开 MIT 仓库，main 持续提交推送 |
+| 0.1.1 | npm 已发布，公开安装后 install/init/check 验证通过 |
+| 0.1.2 | 源码、tgz 和 Git 标签已准备，npm 发布等待账号认证 |
+| npm latest | 本次通过 npm view 实测为 0.1.1 |
+
+标签存在、上传开始或网页认证完成都不单独等于发布成功。需要 npm publish 成功、registry 元数据及公开安装验证。已有 tgz 不会随之后的 README 编辑自动变化。
 
 ## 验证结果
 
-| 验证 | 结果 |
+| 检查 | 结果与边界 |
 |---|---|
-| TypeScript 编译及 noEmit 检查 | 通过 |
-| Vitest / Node 26.3.0 | 21/21 通过 |
-| Vitest / Node 22.23.3 | 21/21 通过 |
-| npm 安装时依赖审计 | 0 vulnerabilities（安装时快照） |
-| 七种非空组件组合 | 三种无 Trellis 组合由自动测试覆盖；四种 Trellis 组合真实执行通过 |
-| Trellis 0.6.17 正式接口 | 初始化、任务创建、目录映射和交接均通过 |
-| 已有 Trellis 和代码复用 | 创建 2027 年新工作，复用原仓库，通过 |
-| Windows TTY 交互 | 中文名、代号、默认日期、多选、确认及完成输出通过 |
-| npm pack | 成功；包包含 dist、README 和 agents 模板 |
-| 隔离前缀安装 | 成功，安装后的 wk.cmd 可调用 |
-| 脱离源码目录运行 | 从临时目录执行安装后的 CLI，三组件初始化与 check 通过 |
+| 编译和类型检查 | 0.1.2 发布前通过 |
+| 自动测试 | 2 个文件、32 项通过；本机 Windows Node 26.3.0 |
+| Trellis 必选 | 核心/参数调用归一化；旧无入口工作报迁移需求 |
+| Git 用户名 | 读取、人工输入、默认回车、新空间身份传递已验证 |
+| install 交互 | PowerShell TTY 返回修改正常，返回前没有根目录写入 |
+| init 预览 | 用户中文长名称案例的分组输出检查通过；未覆盖所有终端字体和宽度 |
+| 正式 Trellis | 0.6.17，初始化、任务创建、四种组合及跨年复用通过 |
+| 自动安装 | 临时 npm prefix，隐藏原全局入口，安装 latest 并核对 0.6.17 成功 |
+| 依赖异常分支 | 已安装、同意、拒绝、npm 失败和安装后找不到：5 项流程测试通过 |
+| 0.1.2 包内容 | 含 LICENSE、模板、dist/preview.js 和 dist/dependencies.js |
+| GitHub CI | 配置 Windows Node 22/24；具体结论以对应提交的 Actions 运行记录为准 |
 
-首轮测试曾有一项超过默认 5 秒超时；调整 Windows Git 行为测试的预算为 30 秒后通过，未删除或跳过测试。交互验证发现默认日期回车被空值校验拦截，已修复，并通过实际 TTY 再次确认。
+核心测试对 Trellis 使用 fixture；真实接口与全局安装是独立隔离实验，不能混为一谈。Git 配置测试也使用临时全局配置文件。
 
-## 证据位置
+## 未验收边界
 
-以下为本机临时验收目录，可能被系统清理；它们不是正式业务目录：
+- 0.1.2 尚未完成公开 npm 安装验证。
+- 用户在 Hyper-V 中手工测试；0.1.1 截图中的旧框和缺依赖错误不能当作新版本验收。
+- 尚未在另一条真实 Codex 对话中完成整项业务接续验证。
+- 其他操作系统、全部 Node 小版本和所有 Trellis 安装渠道未全面验证。
+- archive、operations 自动化及全量 Markdown 链接审计不是 wk 当前能力。
 
-- Trellis 初始接口探测：`C:\Users\<用户名>\AppData\Local\Temp\wk-trellis-probe-844cd7b15795469ba6f970d8b334f626`
-- 多组合与复用验收：`C:\Users\<用户名>\AppData\Local\Temp\wk-integration-ec90d945a0354ec6a34bb831573d51bd\WorkHub 中文`
-- TTY 验收：`C:\Users\<用户名>\AppData\Local\Temp\wk-interactive-session-hub`
-- 安装包验收：`C:\Users\<用户名>\AppData\Local\Temp\wk-package-5b65311f2cf44649b157032f38bf15cd`
+## 重现
 
-自动测试可用 `npm run build` 后 `npm test` 重跑，测试数据隔离在临时目录；源码、模板和安装包是正式交付内容。
+```powershell
+npm ci
+npm run check
+npm run build
+npm test
+npm pack --dry-run
+```
 
-## 实际边界
-
-- 首版没有 archive 命令，不执行归档搬移或 operations 内容提炼。
-- 未创建用户正式 WorkHub，未修改用户真实根指针或 FreeFileSync。
-- 源码仓库已 git init，所有新增内容尚未提交，未推送。
-- 尚未在另一条真实 Codex 对话中做业务接续验收；当前完成的是入口文件、目录映射与交接存在性及内容核对。
-- 未覆盖所有 Node 小版本；实测 22.23.3 和 26.3.0，最低版本声明受依赖要求约束。
-- Windows 已实测，其他系统尚未完整验证；全量 Markdown 引用审计和模板升级不在首版范围。
-
-## 下一步
-
-用户可从本地 tgz 安装 wk，再运行 wk install 选择正式根目录，使用一个真实工作试点。正式运行前不需要再生成代码；但需要用户在 VS Code 和 Codex 项目中选好目录，以 Trellis 为主，并验证新对话恢复。
+公共运行记录见 [GitHub Actions](https://github.com/NightingaleWK/workhub-cli/actions)。实验使用临时根目录、WK_CONFIG_PATH 和 npm_config_prefix，不修改正式工作区。临时文件可能被清理，历史路径仅供追踪，不是永久交付链接。
