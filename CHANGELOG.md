@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Group init previews into work identity, labeled Trellis/work/code destinations, management actions, and manually created VS Code workspaces; separate long paths from labels.
+
 - Detect Trellis during `wk install` and offer consent-based global installation of `@mindfoldhq/trellis@latest`.
 - Support explicit `--install-trellis` for automation, verify the installed launcher, and discover npm global packages even when their bin directory is not yet on PATH.
 
