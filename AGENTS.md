@@ -1,13 +1,14 @@
-# Repository working agreements
+# 仓库协作约定
 
-- This repository is the MIT-licensed source for workhub-cli. User workspaces and business data are not source files.
-- Before editing, inspect Git status and preserve unrelated user changes.
-- This is a solo-maintained project. Use the repository's OpenSpec `spec-driven` workflow for future feature and behavior changes; keep the proposal, design, specs, and tasks aligned with the implementation. A pull request or separate reviewer is not a default completion gate.
-- For each completed OpenSpec change, finish the relevant spec sync/archive, run the relevant checks, update documentation and CHANGELOG.md, then commit the coherent change with a clear message and push it to the configured origin unless the current user request limits work to local changes. Do not force-push, rewrite published history, or include unrelated changes.
-- Do not commit credentials, local machine configuration, test workspace data, node_modules, dist, or temporary packages.
-- Run `npm run check`, `npm run build`, and `npm test` for implementation changes. Packaging changes should verify `npm pack` contains the required templates and LICENSE.
-- Git commits and pushes track completed work; package version bumps and version tags mark owner-selected release milestones. Publish an npm package only when the owner explicitly requests that release.
-- After pushing each completed OpenSpec change, proactively give the owner a short release decision brief: summarize the change, report the current package version and latest Git tag, recommend whether a version bump, GitHub tag, or npm publication is timely, and ask which actions they want. Do not wait for the owner to ask. Do not repeat the same prompt for an unchanged revision after they decline. Perform a version bump, tag, or npm publication only after the owner explicitly requests that action, with the relevant checks before execution.
-- Hyper-V interactive testing is performed manually by the owner. Do not keep it as an agent acceptance task or claim it passed without the owner's result.
-- Preserve Trellis/work/code separation and explicit target directories when exercising the CLI. Use temporary roots and WK_CONFIG_PATH for tests.
-- Every new work must create or link a real Trellis space with AGENTS.md and a task entry. Only work/code are optional. Never allow CLI flags or programmatic calls to bypass the mandatory Trellis component.
+- 本仓库是采用 MIT 许可证的 workhub-cli 源码。用户工作空间和业务数据不属于源码文件。
+- 本仓库自行维护的代理指令、工作约定、模板说明及后续新增的同类文件都使用简体中文；命令、路径和代码标识保留原文。
+- 修改前先检查 Git 状态，保留与当前任务无关的用户改动。
+- 本项目由一人维护。后续功能和行为变更使用仓库已配置的 OpenSpec `spec-driven` 流程，并保持提案、设计、规格、任务与实现一致。默认不设置拉取请求或独立评审人作为完成门槛。
+- 每项 OpenSpec 工作完成后，按需同步和归档规格，运行相关检查，更新文档及 CHANGELOG.md；随后以明确的提交说明提交这项完整变更，并推送到已配置的 origin。当前用户要求仅保留本地时除外。不得强制推送、改写已发布历史或混入无关变更。
+- 不得提交凭据、本机配置、测试工作空间数据、node_modules、dist 或临时安装包。
+- 实现代码变更时运行 `npm run check`、`npm run build` 和 `npm test`。修改打包内容时还需核对 `npm pack` 包含必需模板和 LICENSE。
+- 每项已完成工作都通过 Git 提交和推送留痕；包版本号与 Git 标签仅在维护者选定的发布里程碑更新。只有维护者明确要求发布时，才发布 npm 包。
+- 每项 OpenSpec 工作完成并推送后，主动向维护者简要汇报本次变更、当前包版本和最新 Git 标签，分别建议是否更新版本号、创建 GitHub 标签或发布 npm 包，并询问维护者的决定。不要等维护者主动提起。维护者拒绝后，不就同一修订重复提醒。只有维护者明确要求相应动作并完成必要检查后，才能改版本号、打标签或发包。
+- Hyper-V 交互体验由维护者手动验证，不列为代理验收待办；未收到维护者的结果时，不得宣称通过。
+- 试运行 CLI 时，保持 Trellis、work、code 分离，并明确指定目标目录。测试使用临时根目录和 `WK_CONFIG_PATH`。
+- CLI 创建的每项新工作都必须创建或关联真实 Trellis 空间，包含 AGENTS.md 和正式任务。只有 work/code 可选。不得让命令参数或程序调用绕过必选的 Trellis 组成部分。
