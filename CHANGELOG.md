@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-09-24
+
+- First npm registry release.
+- Fix Enter-to-accept for the detected Git user name and isolate tests from machine Git configuration.
 
 - Require Trellis for every work as the Codex primary directory and AGENTS.md entry point; only work/code remain optional.
 - Normalize CLI/API component requests, default omitted CLI components to work + Trellis, and support `--components none` for Trellis-only work.

@@ -8,7 +8,15 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 
 需要 Node.js >=22.12（推荐受支持 LTS）、Git、官方 npm 安装的 `@mindfoldhq/trellis` 和 Python 3。每项工作必须创建或关联 Trellis 管理空间，它作为 Codex 主目录，并在根目录保存 AGENTS.md。
 
-当前版本 0.1.0，源码公开，尚未发布 npm；不要把 npm 上可能存在的同名包当成本项目。可以克隆源码后本地打包安装：
+从 npm 安装公开版本：
+
+```powershell
+npm install -g workhub-cli@0.1.1
+wk install
+wk init
+```
+
+也可以克隆源码后本地打包安装：
 
 ```powershell
 git clone https://github.com/NightingaleWK/workhub-cli.git
@@ -22,7 +30,7 @@ npm ci
 npm run build
 npm test
 npm pack
-npm install -g .\workhub-cli-0.1.0.tgz
+npm install -g .\workhub-cli-0.1.1.tgz
 wk --version
 wk install
 wk init
@@ -100,7 +108,7 @@ work/code 只创建选中项；Trellis 必须存在。公共分类目录由 inst
 已验证 Trellis 0.6.17，使用其正式接口：
 
 ```text
-trellis init --codex --yes --user wk-user --no-monorepo
+trellis init --codex --yes --user <Git用户名> --no-monorepo
 python .trellis/scripts/task.py create <标题> --slug <工作编号> --description <说明> --no-start
 ```
 

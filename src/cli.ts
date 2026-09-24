@@ -7,7 +7,7 @@ import { ZodError } from 'zod';
 import { check, init, install, installPlan, makePlan, show, type InitInput } from './core.js';
 import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
 
-const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version('0.1.0').exitOverride();
+const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version('0.1.1').exitOverride();
 let jsonMode=process.argv.includes('--json');
 const interactive=(o:Opts)=>!o.yes && !o.json && !!process.stdin.isTTY && !!process.stdout.isTTY;
 type Opts={root?:string;yes?:boolean;json?:boolean;dryRun?:boolean;name?:string;slug?:string;date?:string;components?:string;trellisExisting?:string;codeExisting?:string;workspaceName?:string};
@@ -67,7 +67,7 @@ options(program.command('install').description('配置根目录并建立公共�
   if(!root) root=path.join(os.homedir(),'WorkHub');
   root=path.resolve(root);const plan=installPlan(root);
   let gitUser=globalGitUser();
-  if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 NightingaleWK',defaultValue:gitUser,validate:s=>s?.trim()?undefined:'必须填写 Git 用户名'}));
+  if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 NightingaleWK',defaultValue:gitUser,validate:s=>(s?.trim()||gitUser)?undefined:'必须填写 Git 用户名'}));
   else if(!gitUser) fail('未找到全局 Git 用户名，请在 wk install 中填写或先设置 git config --global user.name。',2);
   const executionPlan={...plan,gitUser};
   if(!await approve(o,executionPlan)){output(executionPlan);return;} output(install(root,gitUser));

@@ -26,10 +26,26 @@ vi.mock('../src/trellis.js',async(importOriginal)=>{
 });
 
 let temp:string,root:string;
-beforeEach(()=>{temp=fs.mkdtempSync(path.join(os.tmpdir(),'wk-test-'));root=path.join(temp,'中文 WorkHub');process.env.WK_CONFIG_PATH=path.join(temp,'local.json');});
-afterEach(()=>{delete process.env.WK_CONFIG_PATH;fs.rmSync(temp,{recursive:true,force:true});});
+let priorGitConfig:string|undefined;
+beforeEach(()=>{
+ temp=fs.mkdtempSync(path.join(os.tmpdir(),'wk-test-'));root=path.join(temp,'中文 WorkHub');process.env.WK_CONFIG_PATH=path.join(temp,'local.json');
+ priorGitConfig=process.env.GIT_CONFIG_GLOBAL;
+ process.env.GIT_CONFIG_GLOBAL=path.join(temp,'gitconfig');
+ fs.writeFileSync(process.env.GIT_CONFIG_GLOBAL,'[user]\n\tname = wk-test-user\n');
+});
+afterEach(()=>{
+ delete process.env.WK_CONFIG_PATH;
+ if(priorGitConfig===undefined)delete process.env.GIT_CONFIG_GLOBAL;else process.env.GIT_CONFIG_GLOBAL=priorGitConfig;
+ fs.rmSync(temp,{recursive:true,force:true});
+});
 const input=(extra={})=>({name:'测试工作',slug:'sample',date:'2026-09-24',components:['work','code'],...extra});
 describe('workspace behaviors',()=>{
+ it('requires manual identity without a global Git name, before any root writes',()=>{
+  fs.writeFileSync(process.env.GIT_CONFIG_GLOBAL!,'');
+  expect(globalGitUser()).toBeUndefined();expect(()=>install(root)).toThrow('Git 用户名');
+  expect(fs.existsSync(root)).toBe(false);
+  install(root,'manual-user');expect((readJson(path.join(root,'.wk/config.json')) as any).gitUser).toBe('manual-user');
+ });
  it('requires Trellis even with no optional components and normalizes explicit selection',()=>{
   install(root);
   const a=makePlan(root,input({components:[]}));
