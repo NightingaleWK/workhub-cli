@@ -8,3 +8,4 @@
 - Run `npm run check`, `npm run build`, and `npm test` for implementation changes. Packaging changes should verify `npm pack` contains the required templates and LICENSE.
 - Keep release notes in CHANGELOG.md. Use version tags for reviewed release milestones; do not tag every implementation commit or publish npm packages without a release request.
 - Preserve Trellis/work/code separation and explicit target directories when exercising the CLI. Use temporary roots and WK_CONFIG_PATH for tests.
+- Every new work must create or link a real Trellis space with AGENTS.md and a task entry. Only work/code are optional. Never allow CLI flags or programmatic calls to bypass the mandatory Trellis component.

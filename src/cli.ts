@@ -70,20 +70,21 @@ options(program.command('install').description('配置根目录并建立公共�
 });
 options(program.command('init').description('交互创建工作，或使用参数供 AI 调用'),true)
   .option('--name <name>','中文工作名').option('--slug <slug>','英文代号').option('--date <YYYY-MM-DD>','工作日期，默认本地今天')
-  .option('--components <items>','work,trellis,code 逗号分隔').option('--trellis-existing <path>','根目录内已有 Trellis 仓库相对路径')
+  .option('--components <items>','可选 work,code；none 表示仅 Trellis；省略默认 work；Trellis 始终包含').option('--trellis-existing <path>','根目录内已有 Trellis 仓库相对路径')
   .option('--code-existing <path>','根目录内已有代码仓库相对路径').option('--workspace-name <filename>','替代工作区文件名')
   .action(async(o:Opts)=>{
     const root=rootResolve(o.root);validateRoot(root);
-    let name=o.name,slug=o.slug,date=o.date??today(),components=o.components?.split(',').map(s=>s.trim());
+    let name=o.name,slug=o.slug,date=o.date??today(),components=o.components===undefined?undefined:o.components==='none'?[]:o.components.split(',').map(s=>s.trim());
     if(interactive(o)) {
       p.intro('新建工作');
       name=name??answer(await p.text({message:'工作中文名',validate:validation(nameCheck)}));
       slug=slug??answer(await p.text({message:'英文代号（小写字母、数字和连字符）',validate:s=>/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s??'')?undefined:'请输入有效英文代号'}));
       if(!o.date)date=answer(await p.text({message:'工作日期',placeholder:date,defaultValue:date,validate:s=>validation(dateCheck)(s||date)}));
-      components=components??answer(await p.multiselect({message:'选择组成部分（空格选择，回车确认）',options:[{value:'work',label:'work — 业务资料'},{value:'trellis',label:'trellis — 管理入口'},{value:'code',label:'code — 代码仓库'}],initialValues:['work'],required:true}));
+      p.log.info('Trellis 为必选管理入口，始终创建或关联；AGENTS.md 位于其根目录。');
+      components=components??answer(await p.multiselect({message:'选择可选组成部分（可以不选，仅创建 Trellis）',options:[{value:'work',label:'work — 业务资料'},{value:'code',label:'code — 代码仓库'}],initialValues:['work'],required:false}));
       for(const kind of ['trellis','code'] as const) {
         const key=kind==='trellis'?'trellisExisting':'codeExisting';
-        if(!components!.includes(kind)||o[key])continue;
+        if((kind!=='trellis'&&!components!.includes(kind))||o[key])continue;
         const target=path.join(root,kind,slug!);
         const mode=answer(await p.select({message:`${kind} 目录${exists(target)?'（默认位置已存在）':''}`,options:[{value:'new',label:`新建 ${kind}/${slug}`},{value:'link',label:'关联已有仓库'}],initialValue:exists(target)?'link':'new'}));
         if(mode==='link')o[key]=answer(await p.text({message:`已有 ${kind} 仓库路径（相对于 WorkHub）`,placeholder:`${kind}/${slug}`,defaultValue:`${kind}/${slug}`}));
@@ -94,7 +95,8 @@ options(program.command('init').description('交互创建工作，或使用参�
         o.workspaceName=answer(await p.text({message:'工作区名称已占用，请指定新文件名',placeholder:alternative,defaultValue:alternative,validate:s=>validation(nameCheck)(s||alternative)}));
       }
     }
-    if(!name||!slug||!components)fail('缺少 --name、--slug 或 --components。',2);
+    components??=['work'];
+    if(!name||!slug)fail('缺少 --name 或 --slug。',2);
     const input:InitInput={name:name!,slug:slug!,date,components:components!,trellisExisting:o.trellisExisting,codeExisting:o.codeExisting,workspaceName:o.workspaceName};
     const plan=makePlan(root,input);
     if(!await approve(o,plan)){output(plan);return;}

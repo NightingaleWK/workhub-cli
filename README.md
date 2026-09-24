@@ -6,7 +6,7 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 
 ## 安装与第一次使用
 
-需要 Node.js >=22.12（推荐受支持 LTS）和 Git。选择 Trellis 组件时，另外需要官方 npm 安装的 `@mindfoldhq/trellis` 和 Python 3。
+需要 Node.js >=22.12（推荐受支持 LTS）、Git、官方 npm 安装的 `@mindfoldhq/trellis` 和 Python 3。每项工作必须创建或关联 Trellis 管理空间，它作为 Codex 主目录，并在根目录保存 AGENTS.md。
 
 当前版本 0.1.0，源码公开，尚未发布 npm；不要把 npm 上可能存在的同名包当成本项目。可以克隆源码后本地打包安装：
 
@@ -32,7 +32,7 @@ wk init
 
 `wk install` 默认目录为当前用户主目录下的 WorkHub，例如 `C:\Users\<用户名>\WorkHub`。回车接受默认值，也可输入 `D:\WorkHub`。工具不自动识别或保证磁盘是 SSD。
 
-`wk init` 询问中文名、英文代号、日期（默认本地今天）和 work/trellis/code 多选。选中代码或 Trellis 后可以新建或关联已有仓库。最后展示执行计划并确认。
+`wk init` 询问中文名、英文代号、日期（默认本地今天）。Trellis 固定必选，多选菜单只包含 work 和 code，可以全部不选以创建仅有 Trellis 的工作。Trellis 始终可以新建或关联已有管理仓库；选择 code 时可以新建或关联代码仓库。最后展示执行计划并确认。
 
 初始化不自动提交、推送、创建远程或设置应用里的项目。新仓库尚无提交，请按实际工作需要自行提交。分类目录不建总仓库。
 
@@ -57,7 +57,7 @@ wk init --name "尾气后续排查" --slug exhaust-followup --components work,tr
 wk show 20260924-exhaust-analysis --json
 ```
 
-`--components` 至少一项。复用路径必须相对于根目录，并处于对应 trellis/code 分类内且是独立 Git 仓库。
+`--components work,code` 选择可选组成部分，Trellis 始终包含。省略参数默认 work + Trellis；`--components none` 表示仅 Trellis。旧的显式包含 trellis 的写法仍支持。复用路径必须相对于根目录，并处于对应 trellis/code 分类内且是独立 Git 仓库。
 
 非交互写入必须传 `--yes`，缺少必要参数直接报错。JSON 输出适合程序读取；没有 TTY 时普通输出也使用 JSON。dry-run 不写文件，仅验证可构造的计划；外部 Git/Trellis/Python 的运行预检查在执行阶段完成。
 
@@ -69,7 +69,7 @@ wk show 20260924-exhaust-analysis --json
 <root>
 ├─ .wk/config.json
 ├─ .wk/runs/                         # 执行与恢复日志
-├─ trellis/<slug>/                   # 选择时正式初始化
+├─ trellis/<slug>/                   # 必须正式初始化或关联已有空间
 ├─ knowledge/work/YYYY/YYYYMMDD-中文名/
 ├─ knowledge/archive/
 ├─ knowledge/operations/
@@ -81,7 +81,7 @@ wk show 20260924-exhaust-analysis --json
    └─ workspaces/                   # 不自动创建工作区文件
 ```
 
-work/code/Trellis 只创建选中项；公共分类目录由 install 建立。work 内包含 README、材料/分析/实施/证据/交付目录。只有未启用 Trellis 的 work 才生成简要交接文件。
+work/code 只创建选中项；Trellis 必须存在。公共分类目录由 install 建立，正式 Trellis 空间由 init 创建或关联。work 内包含 README、材料/分析/实施/证据/交付目录。任务交接统一放在 Trellis 正式任务中。
 
 工作编号使用创建日期；工作目录年份也按创建日期。英文代号使用小写字母、数字和连字符；中文工作名必须是合法 Windows 文件名。
 
@@ -117,6 +117,10 @@ wk 不安装/升级全局 Trellis，不启用全局 hooks，也不自动切换�
 失败不会删除用户材料。某些外部步骤可能已完成，因此保留目录和日志供诊断，不宣称所有失败都能自动回滚。目录、登记或模板被人工改变导致冲突时需要先核对。
 
 备份请用 FreeFileSync，包括 `.git`、`.wk`、登记和重要未跟踪附件。不要只备份 Git 跟踪文件。
+
+## 旧工作兼容
+
+旧版缺少 Trellis 的登记仍可通过 list/show 读取，但 check 报告缺少必需主目录；重复 init 会给出明确迁移提示，不静默升级、搬移或覆盖旧资料。新建工作缺少 Trellis/Python 依赖时，在创建项目目录前失败，不生成不完整的成功登记。wk install 只配置公共根目录，不自动安装全局 Trellis CLI。
 
 ## 当前限制
 

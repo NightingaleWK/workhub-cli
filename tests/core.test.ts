@@ -2,15 +2,56 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { afterEach,beforeEach,describe,expect,it } from 'vitest';
+import { afterEach,beforeEach,describe,expect,it,vi } from 'vitest';
 import { check,init,install,installPlan,makePlan,show,writeIndexes } from '../src/core.js';
 import { inside,dateCheck,nameCheck,readJson,withLock,same } from '../src/common.js';
+import { trellisPreflight } from '../src/trellis.js';
+
+// Core tests isolate the external Trellis process. Real adapter acceptance is
+// performed separately with the official CLI, never claimed by these fixtures.
+vi.mock('../src/trellis.js',async(importOriginal)=>{
+ const actual=await importOriginal<typeof import('../src/trellis.js')>();
+ return {...actual,
+  trellisPreflight:vi.fn(()=>({command:'fixture',prefix:[],version:'fixture',python:'fixture'})),
+  initTrellis:(dir:string)=>{fs.mkdirSync(path.join(dir,'.trellis/scripts'),{recursive:true});fs.writeFileSync(path.join(dir,'.trellis/scripts/task.py'),'# test fixture');},
+  createTask:(base:string,record:any)=>{
+   const rel=`${record.components.trellis.path}/.trellis/tasks/${record.id}`;
+   fs.mkdirSync(path.join(base,rel),{recursive:true});
+   for(const [file,body] of Object.entries({'task.json':JSON.stringify({id:record.id}),'wk-context.md':record.id,'wk-handoff.md':'fixture handoff'})) {
+    const target=path.join(base,rel,file);if(!fs.existsSync(target))fs.writeFileSync(target,body);
+   }
+   return rel;
+  }
+ };
+});
 
 let temp:string,root:string;
 beforeEach(()=>{temp=fs.mkdtempSync(path.join(os.tmpdir(),'wk-test-'));root=path.join(temp,'中文 WorkHub');process.env.WK_CONFIG_PATH=path.join(temp,'local.json');});
 afterEach(()=>{delete process.env.WK_CONFIG_PATH;fs.rmSync(temp,{recursive:true,force:true});});
 const input=(extra={})=>({name:'测试工作',slug:'sample',date:'2026-09-24',components:['work','code'],...extra});
 describe('workspace behaviors',()=>{
+ it('requires Trellis even with no optional components and normalizes explicit selection',()=>{
+  install(root);
+  const a=makePlan(root,input({components:[]}));
+  expect(a.record.components.trellis?.path).toBe('trellis/sample');
+  expect(a.record.components.work).toBeUndefined();expect(a.record.components.code).toEqual([]);
+  expect(a.record.requestHash).toBe(makePlan(root,input({components:['trellis']})).record.requestHash);
+  expect(init(root,input({components:[]})).check.ok).toBe(true);
+ });
+ it('fails before creating project directories when the mandatory dependency is missing',()=>{
+  install(root);vi.mocked(trellisPreflight).mockImplementationOnce(()=>{throw new Error('Trellis unavailable');});
+  expect(()=>init(root,input())).toThrow('Trellis unavailable');
+  expect(fs.existsSync(path.join(root,'code/sample'))).toBe(false);
+  expect(fs.existsSync(path.join(root,'knowledge/work/2026'))).toBe(false);
+  expect(fs.readdirSync(path.join(root,'navigation/registry/works'))).toEqual([]);
+ });
+ it('flags legacy records without Trellis without changing or migrating them',()=>{
+  install(root);const r=init(root,input());
+  const f=path.join(root,`navigation/registry/works/${r.record.id}.json`);const legacy=readJson(f) as any;
+  delete legacy.components.trellis;delete legacy.taskPath;fs.writeFileSync(f,JSON.stringify(legacy));const before=fs.readFileSync(f,'utf8');
+  expect(check(root).errors.some(s=>s.includes('Trellis 主目录'))).toBe(true);
+  expect(()=>makePlan(root,input())).toThrow('旧工作缺少');expect(fs.readFileSync(f,'utf8')).toBe(before);
+ });
  it('installs idempotently, preserves user README and does not create root git',()=>{
   install(root);fs.writeFileSync(path.join(root,'navigation/README.md'),'用户说明');install(root);
   expect(fs.readFileSync(path.join(root,'navigation/README.md'),'utf8')).toBe('用户说明');
@@ -25,7 +66,7 @@ describe('workspace behaviors',()=>{
   install(root);const r=init(root,input());expect(r.check.ok).toBe(true);
   expect(r.record.id).toBe('20260924-sample');
   expect(fs.existsSync(path.join(root,'code/sample/.git'))).toBe(true);
-  expect(fs.existsSync(path.join(root,'trellis/sample'))).toBe(false);
+    expect(fs.existsSync(path.join(root,'trellis/sample/AGENTS.md'))).toBe(true);
   expect(show(root,r.record.id).workspace).toBe('待创建');
   const f=path.join(root,'navigation/indexes/工作目录/2026.md');const old=fs.readFileSync(f,'utf8');writeIndexes(root);expect(fs.readFileSync(f,'utf8')).toBe(old);
   fs.writeFileSync(path.join(root,'code/sample/README.md'),'user change');
@@ -33,7 +74,7 @@ describe('workspace behaviors',()=>{
  });
  it.each([['work'],['code']])('supports %j without inventing missing components',(component)=>{
   install(root);const r=init(root,input({components:[component]}));expect(r.check.ok).toBe(true);
-  expect(r.record.components.trellis).toBeUndefined();expect(r.record.components.work!==undefined).toBe(component==='work');
+  expect(r.record.components.trellis?.path).toBe('trellis/sample');expect(r.record.components.work!==undefined).toBe(component==='work');
  });
  it('rejects collisions before writing other components',()=>{
   install(root);fs.mkdirSync(path.join(root,'code/sample'));fs.writeFileSync(path.join(root,'code/sample/keep'),'important');
@@ -103,7 +144,9 @@ describe('validation and CLI',()=>{
   const dry=invoke(['install','--root',root,'--dry-run','--json']);expect(dry.status).toBe(0);expect(JSON.parse(dry.stdout).root).toBe(root);expect(fs.existsSync(root)).toBe(false);
   expect(invoke(['install','--root',root,'--yes','--json']).status).toBe(0);
   const bad=invoke(['init','--json','--yes']);expect(bad.status).toBe(2);expect(JSON.parse(bad.stdout).ok).toBe(false);
-  const created=invoke(['init','--name','CLI测试','--slug','cli-test','--components','work','--yes','--json']);expect(created.status).toBe(0);expect(JSON.parse(created.stdout).status).toBe('created');
+  const planned=invoke(['init','--name','CLI测试','--slug','cli-test','--components','work','--dry-run','--json']);expect(planned.status).toBe(0);expect(JSON.parse(planned.stdout).record.components.trellis.path).toBe('trellis/cli-test');
+  const only=invoke(['init','--name','仅管理','--slug','only','--components','none','--dry-run','--json']);expect(only.status).toBe(0);expect(JSON.parse(only.stdout).record.components.work).toBeUndefined();expect(JSON.parse(only.stdout).record.components.trellis).toBeDefined();
+  const defaults=invoke(['init','--name','默认组件','--slug','defaults','--dry-run','--json']);expect(defaults.status).toBe(0);expect(JSON.parse(defaults.stdout).record.components.work).toBeDefined();
   const invalid=invoke(['init','--unknown','--json']);expect(invalid.status).toBe(2);expect(JSON.parse(invalid.stdout).ok).toBe(false);
  });
 });

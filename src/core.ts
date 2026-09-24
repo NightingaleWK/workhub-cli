@@ -56,8 +56,8 @@ function journalFile(root:string,id:string) { return inside(root,`.wk/runs/${id}
 export function makePlan(root:string, input:InitInput): Plan {
   validateRoot(root); nameCheck(input.name); nameCheck(input.slug); dateCheck(input.date);
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(input.slug)) fail('英文代号只允许小写字母、数字和单连字符。',2);
-  const selected = [...new Set(input.components)].sort();
-  if (!selected.length || selected.some(c=>!['work','trellis','code'].includes(c))) fail('至少选择一个有效组件：work,trellis,code。',2);
+  const selected = [...new Set(['trellis', ...input.components])].sort();
+  if (selected.some(c=>!['work','trellis','code'].includes(c))) fail('有效组件为 work、code；Trellis 始终必选。',2);
   if ((input.trellisExisting && !selected.includes('trellis')) || (input.codeExisting && !selected.includes('code'))) fail('关联已有目录需要选择对应组件。',2);
   const id = `${input.date.replaceAll('-','')}-${input.slug}`;
   const filename = nameCheck(input.workspaceName ?? `${input.name}.code-workspace`);
@@ -70,6 +70,7 @@ export function makePlan(root:string, input:InitInput): Plan {
   const all = records(root);
   const previous = all.find(r=>r.id===id);
   if (previous) {
+    if (!previous.components.trellis) fail(`旧工作缺少必需的 Trellis 入口：${id}。请先迁移或补齐正式管理空间与任务登记；wk 不自动改写旧工作。`,3);
     if (previous.requestHash !== record.requestHash) fail(`工作编号已存在，参数不一致：${id}`,3);
     return {root,record:previous,existing:true,directories:[],modifications:[]};
   }
@@ -146,7 +147,6 @@ export function init(root:string,input:InitInput) {
         for (const child of ['原始材料','调查分析','实施记录','验证证据','结果与交付']) fs.mkdirSync(inside(root,`${rel}/${child}`),{recursive:true});
         ensureFile(inside(root,`${rel}/README.md`),`# ${rec.name}\n\n工作编号：${rec.id}\n创建日期：${rec.createdDate}\n状态：进行中，业务尚未验证\n\n## 目标、范围与完成条件\n待用户与 AI 确认。\n\n## 关联目录\n以下路径相对于 WorkHub 根目录：\n- Trellis：${rec.components.trellis?.path ?? '未启用'}\n- 代码：${rec.components.code.map(c=>c.path).join(', ') || '未启用'}\n- 登记：navigation/registry/works/${rec.id}.json\n\n## 证据与交付\n原始材料、调查分析、实施记录、验证证据、结果与交付分别存放。所有程序和脚本写入 code。\n\n## 未确认事项\n尚无业务验证结论。\n`);
         ensureFile(inside(root,`${rel}/.gitignore`),'*.tmp\n~$*\n.env\n');
-        if (!rec.components.trellis) ensureFile(inside(root,`${rel}/交接.md`),'# 交接\n\n已完成目录初始化；下一步确认目标、范围和验收条件。业务尚未验证。\n');
       }
       for (const c of rec.components.code.filter(c=>c.mode==='created')) {
         ensureFile(inside(root,`${c.path}/README.md`),`# ${rec.name}\n\nWorkHub 工作：${rec.id}\n\n## 构建、运行与测试\n待实现后补充。业务资料见登记中的 work 路径。\n`);
@@ -172,6 +172,7 @@ export function check(root:string,id?:string) {
   if (id && !selected.length) fail(`没有该工作：${id}`,2);
   const errors:string[]=[]; const warnings:string[]=[];
   for (const rec of selected) {
+    if (!rec.components.trellis) errors.push(`旧工作缺少必需的 Trellis 主目录：${rec.id}；需要迁移，未自动修改。`);
     for (const c of [rec.components.work,rec.components.trellis,...rec.components.code].filter(c=>c!==undefined)) {
       const p=inside(root,c.path);
       if (!exists(p)) { errors.push(`缺少目录：${c.path}`); continue; }
