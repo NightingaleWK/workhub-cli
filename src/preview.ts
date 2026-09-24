@@ -2,7 +2,7 @@ import path from 'node:path';
 import { exists, gitRoot, same } from './common.js';
 import type { Plan } from './core.js';
 
-export function previewLines(plan: Plan | {root:string;directories:string[];gitUser?:string}): string[] {
+export function previewLines(plan: Plan | {root:string;directories:string[];gitUser?:string;trellis?:string}): string[] {
   if ('record' in plan) {
     const {record:r,root}=plan;
     const parts=[r.components.trellis,r.components.work,...r.components.code].filter(c=>c!==undefined);
@@ -19,7 +19,7 @@ export function previewLines(plan: Plan | {root:string;directories:string[];gitU
   const navigation=path.join(plan.root,'navigation');
   const repo=gitRoot(navigation);
   return [
-    `工作目录  ${plan.root}`,`Git 用户  ${plan.gitUser??'未设置'}`,'',
+    `工作目录  ${plan.root}`,`Git 用户  ${plan.gitUser??'未设置'}`,`Trellis   ${plan.trellis??'待检查'}`,'',
     '公共目录：',
     ...plan.directories.filter(p=>!p.startsWith('.wk')).map(p=>`  ${exists(path.join(plan.root,p))?'已存在，保留':'创建'}  ${p}/`),
     '',repo&&same(repo,navigation)?'navigation 已是 Git 仓库，保留现有仓库。':'navigation 将初始化为 Git 仓库。',

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Detect Trellis during `wk install` and offer consent-based global installation of `@mindfoldhq/trellis@latest`.
+- Support explicit `--install-trellis` for automation, verify the installed launcher, and discover npm global packages even when their bin directory is not yet on PATH.
+
 - Replace boxed execution plans with a left flow line and grouped configuration details.
 - Show the Git user name and actual create/preserve/link directory states before confirmation.
 - Allow returning to edit install/init inputs without writing files; retain prior answers as defaults.

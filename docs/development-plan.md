@@ -237,7 +237,7 @@ wk 与 Trellis 的责任：
 
 生成或补充 AGENTS.md 时使用明确的 wk 管理区块；既有文件首次接入先预览差异，不盲目替换。受管区块有人工修改时检测冲突，保留原文。
 
-Trellis 缺失或接口不支持时：选择该组件的计划在预检查阶段明确失败；不临时伪造一个空目录或假任务。第一版不自动安装/升级全局 Trellis。
+Trellis 缺失或接口不支持时：选择该组件的计划在预检查阶段明确失败；不临时伪造一个空目录或假任务。更新规则：wk install 检测 Trellis，缺失时经交互同意或显式 --install-trellis 执行 npm install -g @mindfoldhq/trellis@latest；已有版本不自动升级。dry-run 不安装，失败不继续写入 WorkHub。
 
 ## 10. 文件写入、Git 与失败恢复
 

@@ -6,7 +6,7 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 
 ## 安装与第一次使用
 
-需要 Node.js >=22.12（推荐受支持 LTS）、Git、官方 npm 安装的 `@mindfoldhq/trellis` 和 Python 3。每项工作必须创建或关联 Trellis 管理空间，它作为 Codex 主目录，并在根目录保存 AGENTS.md。
+需要 Node.js >=22.12（推荐受支持 LTS）、Git 和 Python 3。`wk install` 会检测 Trellis，未安装时询问是否执行 `npm install -g @mindfoldhq/trellis@latest`，同意后自动安装并验证。每项工作必须创建或关联 Trellis 管理空间，它作为 Codex 主目录，并在根目录保存 AGENTS.md。
 
 从 npm 安装公开版本：
 
@@ -67,6 +67,8 @@ wk --help
 
 所有命令支持 `--root <路径>` 和 `--json`。install/init 支持 `--yes` 和 `--dry-run`。默认从本机配置找根目录；`--root` 只针对本次调用，install 成功会注册新根。
 
+缺少 Trellis 时，非交互配置必须显式授权全局安装：`wk install --yes --install-trellis`。`--yes` 本身不授权该安装；`--dry-run` 仅显示检测状态，不安装。拒绝安装、npm 失败或版本验证失败时，不继续写入 WorkHub；已成功安装的全局工具不会因后续配置失败被自动卸载。已存在的 Trellis 不自动升级，Python 仍需自行准备。
+
 AI 调用示例：
 
 ```powershell
@@ -114,7 +116,7 @@ trellis init --codex --yes --user <Git用户名> --no-monorepo
 python .trellis/scripts/task.py create <标题> --slug <工作编号> --description <说明> --no-start
 ```
 
-wk 不安装/升级全局 Trellis，不启用全局 hooks，也不自动切换当前任务。Trellis 可能生成 bootstrap 任务，这是它自身行为。
+wk install 仅在 Trellis 缺失且用户同意时安装全局 Trellis，不自动升级已有版本、不启用全局 hooks，也不自动切换当前任务。Trellis 可能生成 bootstrap 任务，这是它自身行为。
 
 保留 Trellis 原 AGENTS.md，追加 `WK:START v1` 到 `WK:END` 区块；已有区块被人工修改时停止并报告冲突，不覆盖。
 
@@ -138,7 +140,7 @@ wk 不安装/升级全局 Trellis，不启用全局 hooks，也不自动切换�
 
 ## 旧工作兼容
 
-旧版缺少 Trellis 的登记仍可通过 list/show 读取，但 check 报告缺少必需主目录；重复 init 会给出明确迁移提示，不静默升级、搬移或覆盖旧资料。新建工作缺少 Trellis/Python 依赖时，在创建项目目录前失败，不生成不完整的成功登记。wk install 只配置公共根目录，不自动安装全局 Trellis CLI。
+旧版缺少 Trellis 的登记仍可通过 list/show 读取，但 check 报告缺少必需主目录；重复 init 会给出明确迁移提示，不静默升级、搬移或覆盖旧资料。新建工作缺少 Trellis/Python 依赖时，在创建项目目录前失败，不生成不完整的成功登记。wk install 在缺少 Trellis 时提供经用户同意的自动安装；wk init 本身仍不自动安装依赖。
 
 ## 当前限制
 

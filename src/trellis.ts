@@ -2,15 +2,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { exists, fail, inside, readJson, run, ensureFile, slash, type WorkRecord } from './common.js';
+import { npmGlobalTrellis } from './dependencies.js';
 
 // Resolve the official npm launcher without invoking cmd.exe or interpolating a shell command.
-export function trellisCommand(): { command: string; prefix: string[] } {
+export function findTrellisCommand(): { command: string; prefix: string[] } | undefined {
   for (const dir of (process.env.PATH ?? '').split(path.delimiter)) {
     const candidate = path.join(dir, 'node_modules', '@mindfoldhq', 'trellis', 'bin', 'trellis.js');
     if (exists(candidate)) return { command: process.execPath, prefix: [candidate] };
     if (process.platform !== 'win32' && exists(path.join(dir, 'trellis'))) return { command: path.join(dir, 'trellis'), prefix: [] };
   }
-  return fail('未找到官方 Trellis npm 安装。请安装 @mindfoldhq/trellis 后重试；wk 不自动安装全局工具。');
+  const globalEntry=npmGlobalTrellis();
+  return globalEntry?{command:process.execPath,prefix:[globalEntry]}:undefined;
+}
+export function trellisCommand(): { command: string; prefix: string[] } {
+  return findTrellisCommand() ?? fail('未找到 Trellis。请运行 wk install 并同意安装，或执行 npm install -g @mindfoldhq/trellis@latest。');
+}
+export function verifyTrellis() {
+  const t=trellisCommand();
+  return run(t.command,[...t.prefix,'--version']);
 }
 export function trellisPreflight() {
   const t = trellisCommand();

@@ -160,7 +160,9 @@ describe('validation and CLI',()=>{
  it('validates dates including leap year',()=>{expect(dateCheck('2024-02-29')).toBe('2024-02-29');expect(()=>dateCheck('2026-02-29')).toThrow();});
  it('uses clean JSON in non-TTY mode and does not wait for missing input',()=>{
   const cli=path.resolve('dist/cli.js');
-  const invoke=(args:string[])=>spawnSync(process.execPath,[cli,...args],{encoding:'utf8',timeout:15000,env:{...process.env,WK_CONFIG_PATH:path.join(temp,'local.json')}});
+  const fixture=path.join(temp,'bin/node_modules/@mindfoldhq/trellis/bin');
+  fs.mkdirSync(fixture,{recursive:true});fs.writeFileSync(path.join(fixture,'trellis.js'),"console.log('test-fixture');");
+  const invoke=(args:string[])=>spawnSync(process.execPath,[cli,...args],{encoding:'utf8',timeout:15000,env:{...process.env,PATH:path.join(temp,'bin')+path.delimiter+process.env.PATH,WK_CONFIG_PATH:path.join(temp,'local.json')}});
   const dry=invoke(['install','--root',root,'--dry-run','--json']);expect(dry.status).toBe(0);expect(JSON.parse(dry.stdout).root).toBe(root);expect(fs.existsSync(root)).toBe(false);
   expect(invoke(['install','--root',root,'--yes','--json']).status).toBe(0);
   const bad=invoke(['init','--json','--yes']);expect(bad.status).toBe(2);expect(JSON.parse(bad.stdout).ok).toBe(false);

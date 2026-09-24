@@ -5,13 +5,15 @@ import { Command, CommanderError } from 'commander';
 import * as p from '@clack/prompts';
 import { ZodError } from 'zod';
 import { previewLines, renderPreview } from './preview.js';
+import { ensureTrellis, installTrellisPackage } from './dependencies.js';
+import { findTrellisCommand, verifyTrellis } from './trellis.js';
 import { check, init, install, installPlan, makePlan, show, type InitInput } from './core.js';
 import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
 
 const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version('0.1.1').exitOverride();
 let jsonMode=process.argv.includes('--json');
 const interactive=(o:Opts)=>!o.yes && !o.json && !!process.stdin.isTTY && !!process.stdout.isTTY;
-type Opts={root?:string;yes?:boolean;json?:boolean;dryRun?:boolean;name?:string;slug?:string;date?:string;components?:string;trellisExisting?:string;codeExisting?:string;workspaceName?:string};
+type Opts={root?:string;yes?:boolean;json?:boolean;dryRun?:boolean;installTrellis?:boolean;name?:string;slug?:string;date?:string;components?:string;trellisExisting?:string;codeExisting?:string;workspaceName?:string};
 function output(value:unknown) {
   if(jsonMode || !process.stdout.isTTY) {console.log(JSON.stringify(value,null,2));return;}
   const v=value as any;
@@ -55,7 +57,7 @@ async function approve(o:Opts,plan:unknown) {
   else if(!o.yes) fail('非交互写入需要 --yes；或使用 --dry-run 查看计划。',2);
   return 'execute' as const;
 }
-options(program.command('install').description('配置根目录并建立公共结构'),true).action(async(o:Opts)=>{
+options(program.command('install').description('配置根目录并建立公共结构'),true).option('--install-trellis','显式同意在缺少 Trellis 时通过 npm 全局安装').action(async(o:Opts)=>{
   let root=o.root;
   let gitUser=globalGitUser();
   while(true) {
@@ -64,10 +66,20 @@ options(program.command('install').description('配置根目录并建立公共�
   root=path.resolve(root);const plan=installPlan(root);
   if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 NightingaleWK',defaultValue:gitUser,validate:s=>(s?.trim()||gitUser)?undefined:'必须填写 Git 用户名'}));
   else if(!gitUser) fail('未找到全局 Git 用户名，请在 wk install 中填写或先设置 git config --global user.name。',2);
-  const executionPlan={...plan,gitUser};
+  const trellisFound=!!findTrellisCommand();
+  const executionPlan={...plan,gitUser,trellis:trellisFound?'已安装':'未安装，执行前需要同意 npm 全局安装'};
   const decision=await approve(o,executionPlan);
   if(decision==='edit')continue;
   if(decision==='preview'){output(executionPlan);return;}
+  await ensureTrellis(findTrellisCommand,async()=>{
+    if(o.installTrellis)return true;
+    if(!interactive(o))fail('未安装 Trellis。请交互运行 wk install，或显式传入 --install-trellis；--yes 不授权全局安装。',2);
+    return answer(await p.confirm({message:'未检测到 Trellis，是否执行 npm install -g @mindfoldhq/trellis@latest？',active:'安装',inactive:'取消',initialValue:false}));
+  },()=>{
+    if(interactive(o))p.log.info('正在通过 npm 全局安装 Trellis，请稍候…');
+    installTrellisPackage();
+  });
+  verifyTrellis();
   output(install(root,gitUser));return;
   }
 });
