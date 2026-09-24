@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Replace boxed execution plans with a left flow line and grouped configuration details.
+- Show the Git user name and actual create/preserve/link directory states before confirmation.
+- Allow returning to edit install/init inputs without writing files; retain prior answers as defaults.
+
 ## 0.1.1 — 2026-09-24
 
 - First npm registry release.
