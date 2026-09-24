@@ -7,6 +7,7 @@
 - Do not commit credentials, local machine configuration, test workspace data, node_modules, dist, or temporary packages.
 - Run `npm run check`, `npm run build`, and `npm test` for implementation changes. Packaging changes should verify `npm pack` contains the required templates and LICENSE.
 - Git commits and pushes track completed work; package version bumps and version tags mark owner-selected release milestones. Publish an npm package only when the owner explicitly requests that release.
+- After pushing each completed OpenSpec change, proactively give the owner a short release decision brief: summarize the change, report the current package version and latest Git tag, recommend whether a version bump, GitHub tag, or npm publication is timely, and ask which actions they want. Do not wait for the owner to ask. Do not repeat the same prompt for an unchanged revision after they decline. Perform a version bump, tag, or npm publication only after the owner explicitly requests that action, with the relevant checks before execution.
 - Hyper-V interactive testing is performed manually by the owner. Do not keep it as an agent acceptance task or claim it passed without the owner's result.
 - Preserve Trellis/work/code separation and explicit target directories when exercising the CLI. Use temporary roots and WK_CONFIG_PATH for tests.
 - Every new work must create or link a real Trellis space with AGENTS.md and a task entry. Only work/code are optional. Never allow CLI flags or programmatic calls to bypass the mandatory Trellis component.

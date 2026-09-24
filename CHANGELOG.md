@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Require proactive release decision briefs after completed OpenSpec changes; version bumps, GitHub tags, and npm publication remain owner decisions.
 - Document the solo-maintainer OpenSpec workflow, Git synchronization, and owner-controlled npm releases; remove Hyper-V interactive acceptance from the project backlog.
 - Reconcile current documentation with the implementation and registry status; retain superseded plans and validation records under docs/history.
 
