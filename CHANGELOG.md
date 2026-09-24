@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Fix Windows 8.3 short-path comparison so GitHub-hosted runners and long-path Git output identify the same repository correctly.
+- Add a regression test using Windows filesystem short-path aliases and keep both CI matrix jobs running independently.
+
 ## 0.1.0 — 2026-09-24
 
 - Initial Windows-first WorkHub CLI: install, init, list, show, and check.

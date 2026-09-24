@@ -4,7 +4,7 @@ import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { afterEach,beforeEach,describe,expect,it } from 'vitest';
 import { check,init,install,installPlan,makePlan,show,writeIndexes } from '../src/core.js';
-import { inside,dateCheck,nameCheck,readJson,withLock } from '../src/common.js';
+import { inside,dateCheck,nameCheck,readJson,withLock,same } from '../src/common.js';
 
 let temp:string,root:string;
 beforeEach(()=>{temp=fs.mkdtempSync(path.join(os.tmpdir(),'wk-test-'));root=path.join(temp,'中文 WorkHub');process.env.WK_CONFIG_PATH=path.join(temp,'local.json');});
@@ -87,6 +87,14 @@ describe('workspace behaviors',()=>{
  });
 });
 describe('validation and CLI',()=>{
+ it('compares Windows short and long paths as the same repository',()=>{
+  if(process.platform!=='win32')return;
+  const longPath=path.join(temp,'Long Directory For Alias');fs.mkdirSync(longPath);
+  const result=spawnSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',"$fso = New-Object -ComObject Scripting.FileSystemObject; $fso.GetFolder($env:WK_TEST_LONG_PATH).ShortPath"],{encoding:'utf8',env:{...process.env,WK_TEST_LONG_PATH:longPath},windowsHide:true});
+  expect(result.status).toBe(0);const shortPath=result.stdout.trim();expect(shortPath.length).toBeGreaterThan(0);
+  expect(same(shortPath,longPath)).toBe(true);
+  expect(inside(shortPath,'child')).toBe(path.resolve(shortPath,'child'));
+ });
  it.each(['CON','nul.txt','bad/name','trailing.','..'])('rejects unsafe name %s',n=>expect(()=>nameCheck(n)).toThrow());
  it('validates dates including leap year',()=>{expect(dateCheck('2024-02-29')).toBe('2024-02-29');expect(()=>dateCheck('2026-02-29')).toThrow();});
  it('uses clean JSON in non-TTY mode and does not wait for missing input',()=>{

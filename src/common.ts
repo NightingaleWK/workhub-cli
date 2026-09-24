@@ -26,7 +26,8 @@ export function ensureFile(p: string, value: string) {
   else if (!fs.statSync(p).isFile()) fail(`应为文件：${p}`, 3);
 }
 export function real(p: string): string {
-  if (exists(p)) return fs.realpathSync(p);
+  // Windows 8.3 aliases (RUNNER~1) must compare equal to Git's long paths.
+  if (exists(p)) return fs.realpathSync.native(p);
   const parent = path.dirname(p);
   if (parent === p) return p;
   return path.join(real(parent), path.basename(p));
