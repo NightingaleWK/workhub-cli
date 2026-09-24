@@ -1,6 +1,6 @@
 {
   "name": "workhub-cli",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Local WorkHub workspace initialization and registry CLI",
   "license": "MIT",
   "author": "NightingaleWK",

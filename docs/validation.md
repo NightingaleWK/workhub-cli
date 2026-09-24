@@ -14,7 +14,13 @@ npm pack --dry-run --json
 
 自动测试在临时目录隔离 Git 配置、WorkHub 根目录和 `WORKHUB_CONFIG_PATH`。核心测试用 fixture 隔离 Trellis 进程；实际 Trellis 接口需在独立临时根目录验收。打包检查需确认 LICENSE、`templates/agents.md`、`dist/cli.js` 和包清单在内。
 
-## 2026-09-24 源码验收结果
+## 0.2.0 发布验收
+
+`npm run check`、`npm run build`、`npm run check:version` 和 `npm test` 均通过，自动测试为 4 个文件、38 项。`npm pack --dry-run --json` 包含 LICENSE、`templates/agents.md`、`dist/cli.js` 和包清单，包只声明 `workhub` 可执行入口。
+
+使用当前源码生成 `workhub-cli-0.2.0.tgz`，在独立 npm 前缀安装后仅生成 `workhub` 的三个平台包装器。隔离安装的 `--version` 输出 `0.2.0`，帮助用法为 `workhub`；通过临时 `WORKHUB_CONFIG_PATH` 运行 `check --json` 成功。本节是发布前的本地验收结果，npm registry 验收将在发布后记录。
+
+## 0.1.2 源码验收结果
 
 `npm run check`、`npm run build`、`npm run check:version` 和 `npm test` 均通过；自动测试为 4 个文件、38 项。`npm pack --dry-run --json` 包含 LICENSE、`templates/agents.md`、`dist/cli.js` 和包清单。
 
