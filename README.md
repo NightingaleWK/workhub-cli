@@ -167,6 +167,8 @@ wk install 仅在 Trellis 缺失且用户同意时安装全局 Trellis，不自�
 
 ## 开发
 
+本项目由一人维护。后续功能和行为变更使用仓库已配置的 OpenSpec `spec-driven` 流程；每项完成的变更验证后更新文档与 CHANGELOG、提交并推送 Git。版本号、标签和 npm 发布由维护者按发布里程碑决定，不随每次 Git 提交自动执行。交互使用体验由维护者自行手动验证。
+
 ```powershell
 npm run check
 npm run build

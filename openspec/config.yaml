@@ -33,3 +33,7 @@ schema: spec-driven
 context: |
   语言：中文（简体）
   所有产出物必须用简体中文撰写。
+  本项目由一人维护，是 Windows 优先的 TypeScript/Node.js 命令行工具，命令为 wk。
+  每项新工作必须创建或关联真实 Trellis 空间及正式任务；只有 work 和 code 可选。
+  WorkHub 用户目录和业务数据不属于本源码仓库。测试使用临时根目录和 WK_CONFIG_PATH。
+  完成的 OpenSpec 变更经验证后提交并推送 Git；npm 版本发布由维护者另行决定。
