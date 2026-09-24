@@ -5,7 +5,7 @@
 - Reconcile current documentation with the implementation and registry status; retain superseded plans and validation records under docs/history.
 
 
-## 0.1.2 — 2026-09-24 (npm publication pending authentication)
+## 0.1.2 — 2026-09-24
 
 - Group init previews into work identity, labeled Trellis/work/code destinations, management actions, and manually created VS Code workspaces; separate long paths from labels.
 

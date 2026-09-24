@@ -6,12 +6,12 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 
 ## 版本与文档范围
 
-2026-09-24 核对：源码及 Git 标签为 `0.1.2`，npm `latest` 仍为 `0.1.1`；`0.1.2` 正等待发布认证，不能以标签存在判断 npm 发布成功。本文功能说明面向当前源码。
+2026-09-24 核对：`0.1.2` 已发布，npm `latest` 为 `0.1.2`。已从公开 registry 隔离安装，并通过版本、install/init/check 验证。本文功能说明面向当前源码。
 
 | 版本 | 已包含功能 |
 |---|---|
 | 0.1.1（已发布） | Trellis 必选、Git 用户名配置；旧版带边框预览，需提前手工安装 Trellis |
-| 0.1.2（源码已准备） | 左侧流程线预览、返回修改、目录状态分组、经同意自动安装 Trellis |
+| 0.1.2（已发布） | 左侧流程线预览、返回修改、目录状态分组、经同意自动安装 Trellis |
 
 升级前运行 `npm view workhub-cli dist-tags.latest` 核对可用版本；安装后运行 `wk --version`。
 
@@ -19,7 +19,7 @@ Windows 优先的 WorkHub 初始化与登记工具，命令名为 `wk`。日常�
 
 需要 Node.js >=22.12（推荐受支持 LTS）、Git 和 Python 3。`wk install` 会检测 Trellis，未安装时询问是否执行 `npm install -g @mindfoldhq/trellis@latest`，同意后自动安装并验证。每项工作必须创建或关联 Trellis 管理空间，它作为 Codex 主目录，并在根目录保存 AGENTS.md。
 
-从 npm 安装当前已公开版本（在 0.1.2 发布前，不包含新预览和自动安装功能）：
+从 npm 安装或升级当前公开版本：
 
 ```powershell
 npm install -g workhub-cli@latest
@@ -27,7 +27,7 @@ wk install
 wk init
 ```
 
-要立即使用本文所述的 0.1.2 功能，可以克隆源码后本地打包安装：
+也可以克隆源码后本地打包安装：
 
 ```powershell
 git clone https://github.com/NightingaleWK/workhub-cli.git
