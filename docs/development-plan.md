@@ -2,6 +2,8 @@
 
 > 2026-09-24 规则修订：Trellis 为所有工作的必需组成部分，始终创建或关联；多选仅包含 work/code，允许均不选。参数省略默认 work + Trellis，none 表示仅 Trellis。本文以下原计划中关于 Trellis 可选、无 Trellis 交接及七种组合的描述作为历史记录保留，以本修订和当前 README 为准。旧版无 Trellis 工作仅报告迁移需求，不自动改写。
 
+> 2026-09-24 补充：`wk install` 读取或询问 Git 全局用户名，保存到 `.wk/config.json`；新建 Trellis 时通过 `trellis init -u <gitUser>` 使用同一身份。
+
 日期：2026-09-24
 源码位置：`C:\Users\<用户名>\code\workhub-cli`
 产品命令：`wk`

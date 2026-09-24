@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
-import { atomic, dateCheck, ensureFile, exists, fail, gitInit, gitRoot, hash, inside, jsonWrite, localConfigPath, nameCheck, readJson, records, RecordSchema, RootSchema, run, same, slash, validateRoot, withLock, type WorkRecord } from './common.js';
+import { atomic, dateCheck, ensureFile, exists, fail, gitInit, gitRoot, globalGitUser, hash, inside, jsonWrite, localConfigPath, nameCheck, readJson, records, RecordSchema, RootSchema, run, same, slash, validateRoot, withLock, type WorkRecord } from './common.js';
 import { addAgents, createTask, initTrellis, taskFolders, trellisPreflight, validateAgents } from './trellis.js';
 
 const layout = ['trellis','knowledge/work','knowledge/archive','knowledge/operations','code','navigation/registry/works','navigation/indexes/工作目录','navigation/templates','navigation/workspaces','.wk/runs'];
@@ -26,8 +26,10 @@ export function installPlan(root: string) {
   noAncestorGit(inside(root,'navigation'));
   return {root, directories:layout, localConfig:localConfigPath(), git:'navigation', note:'仅创建公共结构；不提交、不创建远程。'};
 }
-export function install(root:string) {
+export function install(root:string, gitUser?: string) {
   installPlan(root);
+  const resolvedGitUser = gitUser?.trim() || globalGitUser();
+  if (!resolvedGitUser) fail('未找到全局 Git 用户名，请在 wk install 中填写 Git 用户名。', 2);
   fs.mkdirSync(root,{recursive:true});
   return withLock(root,()=>{
     installPlan(root);
@@ -36,9 +38,9 @@ export function install(root:string) {
     ensureFile(inside(root,'navigation/README.md'),'# WorkHub 导航\n\nregistry/works 是工作登记来源；indexes/工作目录由 wk 自动生成。\nworkspaces 内工作区由用户在 VS Code 中创建。\n手写说明请另建文件，避免编辑自动生成的年度索引。\n');
     ensureFile(inside(root,'navigation/indexes/系统目录.md'),'# 系统目录\n\n长期系统知识按需建立，当前尚未登记系统。本文可人工维护；年度工作索引由 wk 生成。\n');
     ensureFile(inside(root,'navigation/templates/README.md'),'# 模板说明\n\nwk 内置模板随 npm 包分发；本目录预留人工模板。0.1 不自动加载或覆盖自定义模板。\n');
-    if (!exists(inside(root,'.wk/config.json'))) jsonWrite(inside(root,'.wk/config.json'),{schemaVersion:1,layoutVersion:1,templateVersion:1});
+    jsonWrite(inside(root,'.wk/config.json'),{schemaVersion:1,layoutVersion:1,templateVersion:1,gitUser:resolvedGitUser});
     jsonWrite(localConfigPath(),{schemaVersion:1,root});
-    return {root,status:'configured',next:'wk init'};
+    return {root,status:'configured',gitUser:resolvedGitUser,next:'wk init'};
   });
 }
 function component(root:string, category:string, slug:string, existing?:string) {
@@ -127,6 +129,7 @@ export function init(root:string,input:InitInput) {
       return {status:'existing',record:plan.record,check:check(root,plan.record.id)};
     }
     const rec = plan.record;
+    const rootConfig = z.object({gitUser:z.string().min(1)}).parse(readJson(inside(root,'.wk/config.json')));
     const f = journalFile(root,rec.id);
     const log = exists(f) ? JournalSchema.parse(readJson(f)) : {schemaVersion:1 as const,id:rec.id,requestHash:rec.requestHash,record:rec,status:'running' as 'running'|'failed'|'complete',done:[] as string[],error:undefined as string|undefined};
     log.status='running'; delete log.error; jsonWrite(f,log);
@@ -138,7 +141,7 @@ export function init(root:string,input:InitInput) {
           // Record ownership intent before mkdir; a crash leaves a resumable known destination.
           step(`owned:${c.path}`,()=>{});
           fs.mkdirSync(p,{recursive:true});
-          if (rec.components.trellis?.path===c.path) step(`trellis:${c.path}`,()=>initTrellis(p,tools!));
+          if (rec.components.trellis?.path===c.path) step(`trellis:${c.path}`,()=>initTrellis(p,tools!,rootConfig.gitUser));
           step(`git:${c.path}`,()=>gitInit(p));
         }
       }

@@ -5,7 +5,7 @@ import { Command, CommanderError } from 'commander';
 import * as p from '@clack/prompts';
 import { ZodError } from 'zod';
 import { check, init, install, installPlan, makePlan, show, type InitInput } from './core.js';
-import { exists, fail, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
+import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
 
 const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version('0.1.0').exitOverride();
 let jsonMode=process.argv.includes('--json');
@@ -19,7 +19,7 @@ function output(value:unknown) {
     for(const r of v)console.log(`${r.id}  ${r.name}  [${r.lifecycle}]`);
     return;
   }
-  if(v.status==='configured') {console.log(`✓ WorkHub 已配置：${v.root}\n下一步：wk init`);return;}
+  if(v.status==='configured') {console.log(`✓ WorkHub 已配置：${v.root}\nGit 用户名：${v.gitUser}\n下一步：wk init`);return;}
   if(v.record) {
     console.log(`\n✓ ${v.status==='existing'?'工作已存在':v.status==='created'?'工作初始化完成':'工作详情'}：${v.record.name}`);
     console.log(`编号：${v.record.id}`);
@@ -66,7 +66,11 @@ options(program.command('install').description('配置根目录并建立公共�
   if(interactive(o)) { p.intro('配置 WorkHub'); let defaultRoot=path.join(os.homedir(),'WorkHub'); try{defaultRoot=rootResolve();}catch{} root=answer(await p.text({message:'工作根目录（回车使用默认值）',placeholder:root??defaultRoot,defaultValue:root??defaultRoot})); }
   if(!root) root=path.join(os.homedir(),'WorkHub');
   root=path.resolve(root);const plan=installPlan(root);
-  if(!await approve(o,plan)){output(plan);return;} output(install(root));
+  let gitUser=globalGitUser();
+  if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 NightingaleWK',defaultValue:gitUser,validate:s=>s?.trim()?undefined:'必须填写 Git 用户名'}));
+  else if(!gitUser) fail('未找到全局 Git 用户名，请在 wk install 中填写或先设置 git config --global user.name。',2);
+  const executionPlan={...plan,gitUser};
+  if(!await approve(o,executionPlan)){output(executionPlan);return;} output(install(root,gitUser));
 });
 options(program.command('init').description('交互创建工作，或使用参数供 AI 调用'),true)
   .option('--name <name>','中文工作名').option('--slug <slug>','英文代号').option('--date <YYYY-MM-DD>','工作日期，默认本地今天')

@@ -2,7 +2,7 @@
 
 2026-09-24，本机 Trellis 0.6.17，Python 3，Windows。
 
-在临时目录执行官方 `init --codex --yes --user wk-test --no-monorepo` 成功，生成 .trellis、.agents、.codex 和 AGENTS.md；没有自动生成 Git 仓库。
+在临时目录执行官方 `init --codex --yes --user wk-test --no-monorepo` 成功，生成 .trellis、.agents、.codex 和 AGENTS.md；没有自动生成 Git 仓库。wk install 会读取全局 `git config --global user.name`，或在交互界面要求填写，并把结果保存到 WorkHub `.wk/config.json`；wk init 创建新空间时将该值传给 `--user`，不再写死开发者名称。
 
 任务创建接口是 `.trellis/scripts/task.py create`，要求非空标题和 description，支持 `--slug`、`--no-start`。使用 --no-start 避免 wk 改变全局共享的当前任务。Trellis 自己初始化的 bootstrap 指针保持原样。
 

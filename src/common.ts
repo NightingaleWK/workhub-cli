@@ -56,6 +56,11 @@ export function run(command: string, args: string[], cwd?: string): string {
   if (r.error || r.status !== 0) fail(`${command} 执行失败：${r.error?.message ?? r.stderr ?? r.stdout}`);
   return r.stdout.trim();
 }
+export function globalGitUser(): string | undefined {
+  const r = spawnSync('git', ['config', '--global', '--get', 'user.name'], { encoding: 'utf8', windowsHide: true });
+  const value = r.status === 0 ? r.stdout.trim() : '';
+  return value || undefined;
+}
 export function gitRoot(p: string): string | undefined {
   const r = spawnSync('git', ['-C', p, 'rev-parse', '--show-toplevel'], { encoding:'utf8', windowsHide: true });
   return r.status === 0 ? r.stdout.trim() : undefined;
@@ -74,7 +79,7 @@ export function rootResolve(input?: string): string {
   const config = z.object({ schemaVersion: z.literal(1), root: z.string() }).parse(readJson(file));
   return path.resolve(config.root);
 }
-export const RootSchema = z.object({ schemaVersion: z.literal(1), layoutVersion: z.literal(1), templateVersion: z.literal(1) });
+export const RootSchema = z.object({ schemaVersion: z.literal(1), layoutVersion: z.literal(1), templateVersion: z.literal(1), gitUser: z.string().min(1).optional() });
 const Component = z.object({ path: z.string(), mode: z.enum(['created', 'linked']) });
 export const RecordSchema = z.object({
   schemaVersion: z.literal(1), id: z.string().regex(/^\d{8}-[a-z0-9]+(?:-[a-z0-9]+)*$/), name: z.string(), slug: z.string(), createdDate: z.string(), lifecycle: z.enum(['active','archived']),

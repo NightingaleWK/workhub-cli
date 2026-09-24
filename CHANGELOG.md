@@ -5,6 +5,7 @@
 - Require Trellis for every work as the Codex primary directory and AGENTS.md entry point; only work/code remain optional.
 - Normalize CLI/API component requests, default omitted CLI components to work + Trellis, and support `--components none` for Trellis-only work.
 - Report legacy records missing Trellis without silently migrating or overwriting their files.
+- Capture the global Git user name during install and pass it to every new `trellis init -u`.
 
 - Fix Windows 8.3 short-path comparison so GitHub-hosted runners and long-path Git output identify the same repository correctly.
 - Add a regression test using Windows filesystem short-path aliases and keep both CI matrix jobs running independently.

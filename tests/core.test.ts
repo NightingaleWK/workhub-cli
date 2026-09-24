@@ -4,7 +4,7 @@ import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { afterEach,beforeEach,describe,expect,it,vi } from 'vitest';
 import { check,init,install,installPlan,makePlan,show,writeIndexes } from '../src/core.js';
-import { inside,dateCheck,nameCheck,readJson,withLock,same } from '../src/common.js';
+import { inside,dateCheck,nameCheck,readJson,withLock,same,globalGitUser } from '../src/common.js';
 import { trellisPreflight } from '../src/trellis.js';
 
 // Core tests isolate the external Trellis process. Real adapter acceptance is
@@ -57,6 +57,10 @@ describe('workspace behaviors',()=>{
   expect(fs.readFileSync(path.join(root,'navigation/README.md'),'utf8')).toBe('用户说明');
   expect(fs.existsSync(path.join(root,'.git'))).toBe(false);
   expect(fs.existsSync(path.join(root,'navigation/.git'))).toBe(true);
+  expect((readJson(path.join(root,'.wk/config.json')) as any).gitUser).toBe(globalGitUser());
+ });
+ it('persists an explicitly supplied Git username for future Trellis initialization',()=>{
+  install(root,'人工填写的名字');expect((readJson(path.join(root,'.wk/config.json')) as any).gitUser).toBe('人工填写的名字');
  });
  it('dry plan creates nothing and rejects unknown populated roots',()=>{
   installPlan(root);expect(fs.existsSync(root)).toBe(false);

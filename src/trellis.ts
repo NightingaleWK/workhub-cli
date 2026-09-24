@@ -38,8 +38,8 @@ export function addAgents(p: string) {
     fs.writeFileSync(p, text + (text && !text.endsWith('\n') ? '\n' : '') + '\n' + agentsTemplate());
   }
 }
-export function initTrellis(dir: string, tools: ReturnType<typeof trellisPreflight>) {
-  run(tools.command, [...tools.prefix, 'init', '--codex', '--yes', '--user', 'wk-user', '--no-monorepo'], dir);
+export function initTrellis(dir: string, tools: ReturnType<typeof trellisPreflight>, gitUser: string) {
+  run(tools.command, [...tools.prefix, 'init', '--codex', '--yes', '--user', gitUser, '--no-monorepo'], dir);
   if (!exists(path.join(dir,'.trellis','scripts','task.py'))) fail(`Trellis 初始化未生成任务脚本：${dir}`);
 }
 export function taskFolders(root: string, tr: string, id: string) {

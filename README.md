@@ -30,11 +30,19 @@ wk init
 
 或者开发调试使用 `npm link`。安装 npm 包与 `wk install` 不同：前者安装命令，后者配置工作根目录。
 
-`wk install` 默认目录为当前用户主目录下的 WorkHub，例如 `C:\Users\<用户名>\WorkHub`。回车接受默认值，也可输入 `D:\WorkHub`。工具不自动识别或保证磁盘是 SSD。
+`wk install` 默认目录为当前用户主目录下的 WorkHub，例如 `C:\Users\<用户名>\WorkHub`。回车接受默认值，也可输入 `D:\WorkHub`。随后读取全局 `git config --global user.name` 作为 Git 用户名；读取不到时要求人工填写。该名称保存到 `.wk/config.json`，后续传给 `trellis init -u`。工具不自动识别或保证磁盘是 SSD。
 
 `wk init` 询问中文名、英文代号、日期（默认本地今天）。Trellis 固定必选，多选菜单只包含 work 和 code，可以全部不选以创建仅有 Trellis 的工作。Trellis 始终可以新建或关联已有管理仓库；选择 code 时可以新建或关联代码仓库。最后展示执行计划并确认。
 
 初始化不自动提交、推送、创建远程或设置应用里的项目。新仓库尚无提交，请按实际工作需要自行提交。分类目录不建总仓库。
+
+非交互配置可以直接传 `--root`；它会使用全局 Git 用户名。没有全局用户名时，先执行：
+
+```powershell
+git config --global user.name "你的 Git 用户名"
+```
+
+或在交互式 `wk install` 中填写。
 
 ## 命令
 
