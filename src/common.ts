@@ -75,7 +75,7 @@ export function localConfigPath() { return process.env.WK_CONFIG_PATH ?? path.jo
 export function rootResolve(input?: string): string {
   if (input) return path.resolve(input);
   const file = localConfigPath();
-  if (!exists(file)) return fail('尚未配置根目录，请先运行 wk install 或指定 --root。', 2);
+  if (!exists(file)) return fail('尚未配置根目录，请先运行 workhub install 或指定 --root。', 2);
   const config = z.object({ schemaVersion: z.literal(1), root: z.string() }).parse(readJson(file));
   return path.resolve(config.root);
 }
@@ -102,7 +102,7 @@ export function withLock<T>(root: string, action: () => T): T {
   const dir = inside(root, '.wk'); fs.mkdirSync(dir, {recursive:true});
   const lock = inside(root, '.wk/write.lock');
   let fd: number;
-  try { fd = fs.openSync(lock, 'wx'); } catch { return fail(`存在写锁：${lock}。确认没有 wk 进程后，手动检查并移走残留锁；不自动删除。`, 3); }
+  try { fd = fs.openSync(lock, 'wx'); } catch { return fail(`存在写锁：${lock}。确认没有 workhub 进程后，手动检查并移走残留锁；不自动删除。`, 3); }
   fs.writeFileSync(fd, JSON.stringify({pid:process.pid, host:os.hostname(), startedAt:new Date().toISOString()}));
   try { return action(); } finally { fs.closeSync(fd); fs.unlinkSync(lock); }
 }

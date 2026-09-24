@@ -4,7 +4,7 @@
 
 | 对象 | 权威来源 | 何时变化 |
 |---|---|---|
-| 当前源码包版本 | `package.json` 的 `version`；`package-lock.json` 与之同步，`wk --version` 从包清单读取 | 维护者选定发布里程碑后 |
+| 当前源码包版本 | `package.json` 的 `version`；`package-lock.json` 与之同步，`workhub --version` 从包清单读取 | 维护者选定发布里程碑后 |
 | GitHub 发布标签 | 远端 Git 标签 `v<包版本>` | 维护者同意为已验证的提交打标签后 |
 | npm 已发布版本 | npm registry 的包元数据和 `dist-tags` | 维护者明确同意发包且发布成功后 |
 
@@ -27,7 +27,7 @@ npm test
 
 1. 查看从上一个发布标签以来的提交、未发布变更、OpenSpec 完成状态和测试证据，由维护者决定新包版本及是否打标签、发包。不得因 Git 已推送就推断 npm 已发布。
 2. 若维护者决定更新包版本，在干净的工作树中使用 `npm version <新版本号> --no-git-tag-version` 同步包清单和锁文件；检查实际差异。该命令不创建 Git 标签。
-3. 运行上面的检查、`npm pack --dry-run`，并在隔离目录安装新打包文件核对 `wk --version` 与包清单。将“未发布”条目整理到对应版本标题，记录验证结论。
+3. 运行上面的检查、`npm pack --dry-run`，并在隔离目录安装新打包文件核对 `workhub --version` 与包清单，确认包只提供 `workhub` 命令。将“未发布”条目整理到对应版本标题，记录验证结论。
 4. 拟使用的标签名为 `v<package.json.version>`。创建前只读检查本地和远端是否已有同名标签，并核对拟发布的目标提交：
 
    ```powershell

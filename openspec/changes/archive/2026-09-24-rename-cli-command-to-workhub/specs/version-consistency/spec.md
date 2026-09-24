@@ -1,9 +1,6 @@
-# version-consistency Specification
+# Spec Delta
 
-## Purpose
-此能力确保维护者只需在受控的发布步骤中维护包版本，CLI 显示的版本与包内容一致；项目检查能及早发现版本元数据分歧，同时不把普通 Git 提交误判为必须发布的新版本。
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: CLI 报告运行包的版本
 
@@ -32,15 +29,3 @@
 #### Scenario: CLI 输出遗漏更新
 - **WHEN** 构建后的 `workhub --version` 与 `package.json` 不同
 - **THEN** 检查失败并指出两个版本值
-
-### Requirement: 普通提交与发布标签分离
-
-普通 Git 提交必须（MUST）允许包版本和最新发布标签保持不变；仅在维护者选定发布里程碑后，发布核对步骤才必须验证拟创建的 `v<包版本>` 标签与目标提交及包版本一致。
-
-#### Scenario: 完成一项普通 OpenSpec 工作
-- **WHEN** 工作已验证、提交并推送，但维护者尚未决定发布里程碑
-- **THEN** 版本一致性检查不因缺少新标签而失败，也不自动创建标签或发布 npm 包
-
-#### Scenario: 准备创建发布标签
-- **WHEN** 维护者明确要求为当前包版本创建发布标签
-- **THEN** 发布核对步骤确认标签名对应包版本且目标提交正确，并在不一致时阻止继续

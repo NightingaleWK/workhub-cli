@@ -15,7 +15,7 @@ export function findTrellisCommand(): { command: string; prefix: string[] } | un
   return globalEntry?{command:process.execPath,prefix:[globalEntry]}:undefined;
 }
 export function trellisCommand(): { command: string; prefix: string[] } {
-  return findTrellisCommand() ?? fail('未找到 Trellis。请运行 wk install 并同意安装，或执行 npm install -g @mindfoldhq/trellis@latest。');
+  return findTrellisCommand() ?? fail('未找到 Trellis。请运行 workhub install 并同意安装，或执行 npm install -g @mindfoldhq/trellis@latest。');
 }
 export function verifyTrellis() {
   const t=trellisCommand();

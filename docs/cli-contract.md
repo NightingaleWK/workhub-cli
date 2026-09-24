@@ -2,6 +2,10 @@
 
 使用入口见 [README](../README.md)，可安装版本见 [验证状态](validation.md)。
 
+## 命令入口
+
+当前源码包只提供 `workhub` 可执行命令，帮助和后续操作提示也使用该名称。npm 包名仍是 `workhub-cli`；已发布的旧包可能仍提供 `wk`，应以实际安装版本为准。命令更名不迁移 `.wk`、`WK_CONFIG_PATH` 或既有登记与任务文件。
+
 ## install
 
 1. 输入工作根目录，默认当前用户主目录下的 WorkHub。

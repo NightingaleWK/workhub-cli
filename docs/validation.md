@@ -37,12 +37,20 @@
 
 另在系统临时目录执行 `npm pack` 和隔离的 `npm install --prefix ... --ignore-scripts`，已安装包的清单版本与 `wk --version` 均为 `0.1.2`；未修改正式全局安装。只读核对历史标签发现 `v0.1.2` 指向早于本次工作的提交，故本次不复用该标签。此次验证没有修改包版本、创建标签或发布 npm；这些动作由维护者另行决定。
 
+## 2026-09-24 命令改名验证
+
+当前源码将 npm 可执行入口由 `wk` 改为唯一的 `workhub`。本地 `npm pack --dry-run --json` 和实际打包包含 LICENSE、README、`templates/agents.md` 与 `dist/cli.js`；最终本地 tarball 的 SHA-256 为 `C4F1B0DCE1DF0669FEB2FA49F651BDD3E55CDAC5FD66321F65E0A3871AB8AF57`。在系统临时目录使用独立 npm 前缀安装该 tarball 后，仅生成 `workhub`、`workhub.cmd`、`workhub.ps1`，未生成 `wk` 包装器；`--help` 显示 `Usage: workhub`，`--version` 输出源码包版本 `0.1.2`。通过临时 `WK_CONFIG_PATH` 读取旧格式根配置，`list --json` 与 `check --json` 均返回成功。此 tarball 是本地源码构建，不等于 npm 已发布的同版本包。
+
+最终源码运行 `npm run check`、`npm run build`、`npm run check:version`、`npm test` 和 `openspec validate rename-cli-command-to-workhub --strict` 均通过；测试为 4 个文件、38 项。同步并归档后，`openspec validate --specs --strict` 的 2 项主规格和 `openspec validate --archived --strict` 的 2 项归档变更均通过。
+
+全局升级前，`Get-Command wk -All` 仅指向 npm 全局前缀下的三个旧包装器，内容均指向 `node_modules/workhub-cli/dist/cli.js`；全局安装版本为 `0.1.2`，未发现 `workhub` 命令。用上述本地 tarball 执行 `npm install --global --ignore-scripts` 后，PATH 中只可解析到 `workhub` 的三个包装器，旧 `wk` 包装器已由 npm 移除，无需手工删除。`workhub --version` 输出 `0.1.2`，`workhub list --json` 成功读取原有本机配置并返回 1 项登记；未对原有工作空间写入。原已安装版本为 `0.1.2`，npm registry 可查询到该版本的公开 tarball；若需回退，应先核对回退包与命令入口，本地构建与公开同版本的内容不同。本次全局安装不代表 npm 发布。
+
 ## 未验收边界
 
 - 交互使用体验由维护者自行手动验证，不列为本项目的代理验收待办；现有自动和隔离安装验证不代表维护者的手动结论。
 - 尚未在另一条真实 Codex 对话中完成整项业务接续验证。
 - 其他操作系统、全部 Node 小版本和所有 Trellis 安装渠道未全面验证。
-- archive、operations 自动化及全量 Markdown 链接审计不是 wk 当前能力。
+- archive、operations 自动化及全量 Markdown 链接审计不是 workhub 当前能力。
 
 ## 重现
 

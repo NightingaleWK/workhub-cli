@@ -14,7 +14,7 @@
   },
   "type": "module",
   "bin": {
-    "wk": "dist/cli.js"
+    "workhub": "dist/cli.js"
   },
   "files": [
     "dist",

@@ -29,18 +29,18 @@ export function installPlan(root: string) {
 export function install(root:string, gitUser?: string) {
   installPlan(root);
   const resolvedGitUser = gitUser?.trim() || globalGitUser();
-  if (!resolvedGitUser) fail('未找到全局 Git 用户名，请在 wk install 中填写 Git 用户名。', 2);
+  if (!resolvedGitUser) fail('未找到全局 Git 用户名，请在 workhub install 中填写 Git 用户名。', 2);
   fs.mkdirSync(root,{recursive:true});
   return withLock(root,()=>{
     installPlan(root);
     for (const rel of layout) fs.mkdirSync(inside(root,rel),{recursive:true});
     gitInit(inside(root,'navigation'));
-    ensureFile(inside(root,'navigation/README.md'),'# WorkHub 导航\n\nregistry/works 是工作登记来源；indexes/工作目录由 wk 自动生成。\nworkspaces 内工作区由用户在 VS Code 中创建。\n手写说明请另建文件，避免编辑自动生成的年度索引。\n');
-    ensureFile(inside(root,'navigation/indexes/系统目录.md'),'# 系统目录\n\n长期系统知识按需建立，当前尚未登记系统。本文可人工维护；年度工作索引由 wk 生成。\n');
-    ensureFile(inside(root,'navigation/templates/README.md'),'# 模板说明\n\nwk 内置模板随 npm 包分发；本目录预留人工模板。0.1 不自动加载或覆盖自定义模板。\n');
+    ensureFile(inside(root,'navigation/README.md'),'# WorkHub 导航\n\nregistry/works 是工作登记来源；indexes/工作目录由 workhub 自动生成。\nworkspaces 内工作区由用户在 VS Code 中创建。\n手写说明请另建文件，避免编辑自动生成的年度索引。\n');
+    ensureFile(inside(root,'navigation/indexes/系统目录.md'),'# 系统目录\n\n长期系统知识按需建立，当前尚未登记系统。本文可人工维护；年度工作索引由 workhub 生成。\n');
+    ensureFile(inside(root,'navigation/templates/README.md'),'# 模板说明\n\nworkhub 内置模板随 npm 包分发；本目录预留人工模板。0.1 不自动加载或覆盖自定义模板。\n');
     jsonWrite(inside(root,'.wk/config.json'),{schemaVersion:1,layoutVersion:1,templateVersion:1,gitUser:resolvedGitUser});
     jsonWrite(localConfigPath(),{schemaVersion:1,root});
-    return {root,status:'configured',gitUser:resolvedGitUser,next:'wk init'};
+    return {root,status:'configured',gitUser:resolvedGitUser,next:'workhub init'};
   });
 }
 function component(root:string, category:string, slug:string, existing?:string) {
@@ -72,7 +72,7 @@ export function makePlan(root:string, input:InitInput): Plan {
   const all = records(root);
   const previous = all.find(r=>r.id===id);
   if (previous) {
-    if (!previous.components.trellis) fail(`旧工作缺少必需的 Trellis 入口：${id}。请先迁移或补齐正式管理空间与任务登记；wk 不自动改写旧工作。`,3);
+    if (!previous.components.trellis) fail(`旧工作缺少必需的 Trellis 入口：${id}。请先迁移或补齐正式管理空间与任务登记；workhub 不自动改写旧工作。`,3);
     if (previous.requestHash !== record.requestHash) fail(`工作编号已存在，参数不一致：${id}`,3);
     return {root,record:previous,existing:true,directories:[],modifications:[]};
   }

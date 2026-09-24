@@ -12,7 +12,7 @@ import { check, init, install, installPlan, makePlan, show, type InitInput } fro
 import { exists, fail, globalGitUser, nameCheck, dateCheck, records, rootResolve, today, validateRoot, WkError } from './common.js';
 
 const packageVersion=(JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8')) as {version:string}).version;
-const program=new Command().name('wk').description('WorkHub 工作初始化与登记工具').version(packageVersion).exitOverride();
+const program=new Command().name('workhub').description('WorkHub 工作初始化与登记工具').version(packageVersion).exitOverride();
 let jsonMode=process.argv.includes('--json');
 const interactive=(o:Opts)=>!o.yes && !o.json && !!process.stdin.isTTY && !!process.stdout.isTTY;
 type Opts={root?:string;yes?:boolean;json?:boolean;dryRun?:boolean;installTrellis?:boolean;name?:string;slug?:string;date?:string;components?:string;trellisExisting?:string;codeExisting?:string;workspaceName?:string};
@@ -20,11 +20,11 @@ function output(value:unknown) {
   if(jsonMode || !process.stdout.isTTY) {console.log(JSON.stringify(value,null,2));return;}
   const v=value as any;
   if(Array.isArray(v)) {
-    if(!v.length)console.log('尚未登记工作，请运行 wk init。');
+    if(!v.length)console.log('尚未登记工作，请运行 workhub init。');
     for(const r of v)console.log(`${r.id}  ${r.name}  [${r.lifecycle}]`);
     return;
   }
-  if(v.status==='configured') {console.log(`✓ WorkHub 已配置：${v.root}\nGit 用户名：${v.gitUser}\n下一步：wk init`);return;}
+  if(v.status==='configured') {console.log(`✓ WorkHub 已配置：${v.root}\nGit 用户名：${v.gitUser}\n下一步：workhub init`);return;}
   if(v.record) {
     console.log(`\n✓ ${v.status==='existing'?'工作已存在':v.status==='created'?'工作初始化完成':'工作详情'}：${v.record.name}`);
     console.log(`编号：${v.record.id}`);
@@ -67,7 +67,7 @@ options(program.command('install').description('配置根目录并建立公共�
   if(!root) root=path.join(os.homedir(),'WorkHub');
   root=path.resolve(root);const plan=installPlan(root);
   if(interactive(o)) gitUser=answer(await p.text({message:'Git 全局用户名（用于 trellis init -u）',placeholder:gitUser??'例如 NightingaleWK',defaultValue:gitUser,validate:s=>(s?.trim()||gitUser)?undefined:'必须填写 Git 用户名'}));
-  else if(!gitUser) fail('未找到全局 Git 用户名，请在 wk install 中填写或先设置 git config --global user.name。',2);
+  else if(!gitUser) fail('未找到全局 Git 用户名，请在 workhub install 中填写或先设置 git config --global user.name。',2);
   const trellisFound=!!findTrellisCommand();
   const executionPlan={...plan,gitUser,trellis:trellisFound?'已安装':'未安装，执行前需要同意 npm 全局安装'};
   const decision=await approve(o,executionPlan);
@@ -75,7 +75,7 @@ options(program.command('install').description('配置根目录并建立公共�
   if(decision==='preview'){output(executionPlan);return;}
   await ensureTrellis(findTrellisCommand,async()=>{
     if(o.installTrellis)return true;
-    if(!interactive(o))fail('未安装 Trellis。请交互运行 wk install，或显式传入 --install-trellis；--yes 不授权全局安装。',2);
+    if(!interactive(o))fail('未安装 Trellis。请交互运行 workhub install，或显式传入 --install-trellis；--yes 不授权全局安装。',2);
     return answer(await p.confirm({message:'未检测到 Trellis，是否执行 npm install -g @mindfoldhq/trellis@latest？',active:'安装',inactive:'取消',initialValue:false}));
   },()=>{
     if(interactive(o))p.log.info('正在通过 npm 全局安装 Trellis，请稍候…');
